@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-15 -25 45 45">
+  <style>
+    .tilt { animation: tilt 2.6s cubic-bezier(.45,0,.55,1) infinite; transform-origin: 7.5px 5px; }
+    @keyframes tilt { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(3deg); } }
+    .breathe { animation: breathe 4s cubic-bezier(.45,0,.55,1) infinite; transform-origin: 7.5px 17px; }
+    @keyframes breathe { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(1.012); } }
+    .dot1 { animation: pop 1.8s ease-in-out infinite; }
+    .dot2 { animation: pop 1.8s ease-in-out infinite .2s; }
+    @keyframes pop { 0%,60%,100% { transform: scale(1); opacity: .6; } 30% { transform: scale(1.3); opacity: 1; } }
+    .bubble { animation: bubblein 1.8s cubic-bezier(.34,1.56,.64,1) infinite; transform-origin: 17px -13px; }
+    @keyframes bubblein { 0%,45% { transform: scale(0); opacity: 0; } 65%,100% { transform: scale(1); opacity: 1; } }
+    .gear { animation: gearspin 3s linear infinite; transform-origin: 17px -13px; }
+    @keyframes gearspin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  </style>
+
+  <ellipse cx="7.5" cy="17.5" rx="8.5" ry="1.8" fill="rgba(0,0,0,0.15)"/>
+
+  <g class="breathe">
+    <path d="M 14.8 14 Q 20 11 18 6" stroke="#f3d9a8" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <rect x="0" y="3" width="15" height="14.5" rx="6.5" fill="#f3d9a8"/>
+    <ellipse cx="7.5" cy="12" rx="4.2" ry="4.8" fill="#fbeed2" opacity="0.7"/>
+    <ellipse cx="3.6" cy="16.6" rx="1.8" ry="1.3" fill="#f3d9a8"/>
+    <ellipse cx="11.4" cy="16.6" rx="1.8" ry="1.3" fill="#f3d9a8"/>
+
+    <g class="tilt">
+      <polygon points="1,-3.6 3,-9.6 5.6,-4.4" fill="#f3d9a8"/>
+      <polygon points="14,-3.6 12,-9.6 9.4,-4.4" fill="#f3d9a8"/>
+      <polygon points="2,-4.6 3.2,-8.2 4.6,-5" fill="#f6bfcb"/>
+      <polygon points="13,-4.6 11.8,-8.2 10.4,-5" fill="#f6bfcb"/>
+      <circle cx="7.5" cy="-1" r="6.8" fill="#f3d9a8"/>
+      <ellipse cx="3.3" cy="0.6" rx="1.3" ry="0.9" fill="#f6bfcb" opacity="0.7"/>
+      <ellipse cx="11.7" cy="0.6" rx="1.3" ry="0.9" fill="#f6bfcb" opacity="0.7"/>
+      <circle cx="4.9" cy="-1.4" r="2.2" fill="#3a2a1e"/>
+      <circle cx="10.1" cy="-1.4" r="2.2" fill="#3a2a1e"/>
+      <circle cx="4.3" cy="-2.1" r="0.55" fill="#fff"/>
+      <circle cx="10.7" cy="-2.1" r="0.55" fill="#fff"/>
+      <path d="M 6.3 2.5 Q 7.5 3.2 8.7 2.5" stroke="#7a4a3a" stroke-width="0.5" fill="none" stroke-linecap="round"/>
+    </g>
+  </g>
+
+  <circle class="dot1" cx="16" cy="-2" r="0.9" fill="#fbeed2" stroke="#c9ab77" stroke-width="0.3"/>
+  <circle class="dot2" cx="17.6" cy="-6" r="1.3" fill="#fbeed2" stroke="#c9ab77" stroke-width="0.3"/>
+  <g class="bubble">
+    <ellipse cx="17" cy="-13" rx="6.6" ry="5.4" fill="#fbeed2" stroke="#c9ab77" stroke-width="0.4"/>
+    <g class="gear">
+      <circle cx="17" cy="-13" r="2.6" fill="none" stroke="#8a7350" stroke-width="1.1"/>
+      <path d="M17 -16.2 L17 -15.4 M17 -10.6 L17 -9.8 M13.8 -13 L14.6 -13 M19.4 -13 L20.2 -13" stroke="#8a7350" stroke-width="0.7" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>

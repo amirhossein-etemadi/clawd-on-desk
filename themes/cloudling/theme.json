@@ -195,10 +195,27 @@
     "clawd-headphones-groove.svg": "cloudling-juggling.svg",
     "clawd-working-juggling.svg": "cloudling-juggling.svg",
     "clawd-working-conducting.svg": "cloudling-conducting.svg",
-    "clawd-working-thinking.svg": "cloudling-thinking.svg"
+    "clawd-working-thinking.svg": "cloudling-thinking.svg",
+    "gaming": "cloudling-attention.svg",
+    "music": "cloudling-conducting.svg",
+    "video": "cloudling-idle-reading.svg",
+    "meeting": "cloudling-thinking.svg",
+    "typing": "cloudling-typing.svg"
   },
   "updateVisuals": {
     "checking": "cloudling-thinking.svg"
+  },
+  "sounds": {
+    "complete": "complete.mp3",
+    "confirm": "confirm.mp3",
+    "companion_gaming": "companion_gaming.wav",
+    "companion_music": "companion_music.wav",
+    "companion_video": "companion_video.wav",
+    "companion_meeting": "companion_meeting.wav",
+    "companion_streak": "companion_streak.wav",
+    "companion_break": "companion_break.wav",
+    "companion_achievement": "companion_achievement.wav",
+    "companion_levelup": "companion_levelup.wav"
   },
   "timings": {
     "minDisplay": {

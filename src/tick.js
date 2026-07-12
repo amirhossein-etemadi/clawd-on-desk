@@ -51,6 +51,22 @@ let MOUSE_IDLE_TIMEOUT = 0;
 let MOUSE_SLEEP_TIMEOUT = 0;
 let SVG_IDLE_FOLLOW = null;
 let IDLE_ANIMS = [];
+// Weighted random pick over IDLE_ANIMS (see refreshTheme's `weight` comment).
+// Falls back to plain uniform pick if weights are missing/invalid so a
+// malformed theme.json can't crash idle animation selection.
+function pickWeightedIdleAnim(anims) {
+  const totalWeight = anims.reduce((sum, a) => sum + (Number.isFinite(a.weight) && a.weight > 0 ? a.weight : 1), 0);
+  if (!Number.isFinite(totalWeight) || totalWeight <= 0) {
+    return anims[Math.floor(Math.random() * anims.length)];
+  }
+  let r = Math.random() * totalWeight;
+  for (const a of anims) {
+    r -= (Number.isFinite(a.weight) && a.weight > 0 ? a.weight : 1);
+    if (r <= 0) return a;
+  }
+  return anims[anims.length - 1];
+}
+
 let SLEEP_MODE = "full";
 let THEME_SUPPORTS_DIZZY = false;
 
@@ -59,7 +75,15 @@ function refreshTheme() {
   MOUSE_IDLE_TIMEOUT = theme.timings.mouseIdleTimeout;
   MOUSE_SLEEP_TIMEOUT = theme.timings.mouseSleepTimeout;
   SVG_IDLE_FOLLOW = theme.states.idle[0];
-  IDLE_ANIMS = (theme.idleAnimations || []).map(a => ({ svg: a.file, duration: a.duration }));
+  // `weight` is optional (default 1) -- lets a theme mark one idle variant as
+  // rare (e.g. a low-weight easter-egg animation) without needing separate
+  // "common" vs "rare" pools. Backward compatible: a theme that never sets
+  // weight behaves exactly like before (every entry equally likely).
+  IDLE_ANIMS = (theme.idleAnimations || []).map(a => ({
+    svg: a.file,
+    duration: a.duration,
+    weight: Number.isFinite(a.weight) && a.weight > 0 ? a.weight : 1,
+  }));
   SLEEP_MODE = theme.sleepSequence && theme.sleepSequence.mode === "direct" ? "direct" : "full";
   // Precompute dizzy support so the per-tick spin detector can gate cheaply and skip all
   // its math on themes that don't define a real dizzy state (e.g. Calico, Cloudling).
@@ -311,7 +335,7 @@ function runMainTickOnce() {
       if (IDLE_ANIMS.length > 0 && !isMouseIdle && !hasTriggeredYawn && !idleLookPlayed && elapsed >= MOUSE_IDLE_TIMEOUT) {
         isMouseIdle = true;
         idleLookPlayed = true;
-        const pick = IDLE_ANIMS[Math.floor(Math.random() * IDLE_ANIMS.length)];
+        const pick = pickWeightedIdleAnim(IDLE_ANIMS);
         if (!shouldSuppressPassiveIpc()) ctx.sendToRenderer("eye-move", 0, 0);
         setTimeout(() => {
           if (isMouseIdle && ctx.currentState === "idle") {

@@ -51,7 +51,9 @@
     "install:qoderwork-hooks": "node hooks/qoderwork-install.js",
     "uninstall:qoderwork-hooks": "node hooks/qoderwork-install.js --uninstall",
     "cleanup:integrations": "node hooks/cleanup-integrations.js --apply",
-    "register-protocol:dev": "node launch.js --register-protocol"
+    "register-protocol:dev": "node launch.js --register-protocol",
+    "watch-companion": "node scripts/companion-watcher.js",
+    "companion-report": "node scripts/companion-report.js"
   },
   "keywords": [
     "clawd",
@@ -147,14 +149,16 @@
       "extensions/**/*",
       "agents/**/*",
       "themes/**/*",
-      "pwa/**/*"
+      "pwa/**/*",
+      "scripts/**/*"
     ],
     "asarUnpack": [
       "assets/svg/**/*",
       "hooks/**/*",
       "extensions/**/*",
       "agents/**/*",
-      "themes/**/*"
+      "themes/**/*",
+      "scripts/**/*"
     ],
     "extraResources": [
       {

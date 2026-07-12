@@ -147,7 +147,12 @@
     "clawd-idle-reading.svg": "clawd-idle-reading.svg",
     "clawd-idle-bubble.svg": "clawd-idle-bubble.svg",
     "clawd-working-debugger.svg": "clawd-working-debugger.svg",
-    "clawd-working-thinking.svg": "clawd-working-thinking.svg"
+    "clawd-working-thinking.svg": "clawd-working-thinking.svg",
+    "gaming": "clawd-working-juggling.svg",
+    "music": "clawd-headphones-groove.svg",
+    "video": "clawd-idle-reading.svg",
+    "meeting": "clawd-working-thinking.svg",
+    "typing": "clawd-working-typing.svg"
   },
   "updateVisuals": {
     "checking": "clawd-working-debugger.svg"
@@ -285,7 +290,15 @@
   },
   "sounds": {
     "complete": "complete.mp3",
-    "confirm": "confirm.mp3"
+    "confirm": "confirm.mp3",
+    "companion_gaming": "companion_gaming.wav",
+    "companion_music": "companion_music.wav",
+    "companion_video": "companion_video.wav",
+    "companion_meeting": "companion_meeting.wav",
+    "companion_streak": "companion_streak.wav",
+    "companion_break": "companion_break.wav",
+    "companion_achievement": "companion_achievement.wav",
+    "companion_levelup": "companion_levelup.wav"
   },
   "objectScale": {
     "widthRatio": 1.9,

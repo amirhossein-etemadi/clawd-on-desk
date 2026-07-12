@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-15 -25 45 45">
+  <style>
+    .lounge { animation: lounge 3.2s cubic-bezier(.45,0,.55,1) infinite; transform-origin: 7.5px 17px; }
+    @keyframes lounge { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-0.8px); } }
+    .glow { animation: screenflicker 2.6s ease-in-out infinite; }
+    @keyframes screenflicker { 0%,100% { opacity: 0.5; } 30% { opacity: 0.75; } 60% { opacity: 0.4; } 80% { opacity: 0.65; } }
+    .popcorn { animation: popcornfly 2.4s ease-in infinite; }
+    @keyframes popcornfly { 0% { transform: translate(0,0) scale(1); opacity: 0; } 10% { opacity: 1; } 55% { transform: translate(-6px,-8px) scale(0.9); opacity: 1; } 70% { opacity: 0; } 100% { opacity: 0; } }
+    .blink { animation: blink 3.6s ease-in-out infinite; }
+    @keyframes blink { 0%,90%,100% { opacity: 0; } 94%,97% { opacity: 1; } }
+  </style>
+
+  <ellipse cx="7.5" cy="17.5" rx="9.5" ry="1.8" fill="rgba(0,0,0,0.15)"/>
+  <rect class="glow" x="15" y="-3" width="8" height="10" rx="1.2" fill="#8fd3ff" opacity="0.55"/>
+
+  <g class="lounge">
+    <ellipse cx="8" cy="10.5" rx="9.5" ry="7.5" fill="#f3d9a8" transform="rotate(6 8 10.5)"/>
+    <ellipse cx="8" cy="10.5" rx="5.5" ry="5.5" fill="#fbeed2" opacity="0.6" transform="rotate(6 8 10.5)"/>
+
+    <path d="M 4 14.4 L 10.6 12.6 L 11.6 17.6 L 5 19.2 Z" fill="#fbeed2" stroke="#e05a5a" stroke-width="0.5"/>
+    <circle cx="5.4" cy="13.6" r="0.7" fill="#f7e7b4"/>
+    <circle cx="7.6" cy="12.9" r="0.7" fill="#f7e7b4"/>
+    <circle cx="9.8" cy="12.4" r="0.7" fill="#f7e7b4"/>
+
+    <polygon points="2,-1.4 3.6,-7.2 6.2,-2.4" fill="#f3d9a8"/>
+    <polygon points="13.4,-1 14.6,-6.8 11.2,-2.2" fill="#f3d9a8"/>
+    <circle cx="7.5" cy="2.4" r="6.6" fill="#f3d9a8"/>
+    <ellipse cx="3.6" cy="4" rx="1.4" ry="1" fill="#f6bfcb" opacity="0.7"/>
+    <ellipse cx="11.4" cy="4" rx="1.4" ry="1" fill="#f6bfcb" opacity="0.7"/>
+
+    <ellipse cx="5.1" cy="2" rx="1.9" ry="2.2" fill="#3a2a1e"/>
+    <ellipse cx="10.3" cy="2" rx="1.9" ry="2.2" fill="#3a2a1e"/>
+    <ellipse cx="5.1" cy="2" rx="1.9" ry="2.2" fill="#8fd3ff" opacity="0.3"/>
+    <ellipse cx="10.3" cy="2" rx="1.9" ry="2.2" fill="#8fd3ff" opacity="0.3"/>
+    <circle cx="4.5" cy="1.3" r="0.5" fill="#fff"/>
+    <circle cx="10.9" cy="1.3" r="0.5" fill="#fff"/>
+    <rect class="blink" x="2.9" y="0.4" width="4.4" height="2.6" fill="#f3d9a8"/>
+    <rect class="blink" x="8.1" y="0.4" width="4.4" height="2.6" fill="#f3d9a8"/>
+    <ellipse cx="7.5" cy="5.4" rx="0.9" ry="0.7" fill="#7a4a3a"/>
+  </g>
+
+  <circle class="popcorn" cx="5" cy="14" r="0.7" fill="#f7e7b4"/>
+</svg>

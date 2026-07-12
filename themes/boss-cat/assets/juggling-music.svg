@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-15 -25 45 45">
+  <style>
+    .groove { animation: groove 0.85s cubic-bezier(.45,0,.55,1) infinite; transform-origin: 7.5px 17px; }
+    @keyframes groove { 0%,100% { transform: rotate(-5deg) translateY(0); } 50% { transform: rotate(5deg) translateY(-1.6px); } }
+    .tail { animation: tailtap 0.85s cubic-bezier(.45,0,.55,1) infinite; transform-origin: 14.8px 14px; }
+    @keyframes tailtap { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(10deg); } }
+    .note1{ animation: notefloat 2s ease-in infinite; } .note2{ animation: notefloat 2s ease-in infinite .7s; } .note3{ animation: notefloat 2s ease-in infinite 1.4s; }
+    @keyframes notefloat { 0% { transform: translate(0,0) rotate(0deg); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(6px,-12px) rotate(20deg); opacity: 0; } }
+    .glowring { animation: glowring 0.85s ease-in-out infinite; transform-origin: 7.5px -1px; }
+    @keyframes glowring { 0%,100% { opacity: 0.2; } 50% { opacity: 0.5; } }
+  </style>
+
+  <ellipse cx="7.5" cy="17.5" rx="8.5" ry="1.8" fill="rgba(0,0,0,0.15)"/>
+  <circle class="glowring" cx="7.5" cy="-1" r="10" fill="none" stroke="#e05a5a" stroke-width="0.6"/>
+
+  <g class="groove">
+    <path class="tail" d="M 14.8 14 Q 21 12.5 20 6" stroke="#f3d9a8" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <rect x="0" y="3" width="15" height="14.5" rx="6.5" fill="#f3d9a8"/>
+    <ellipse cx="7.5" cy="12" rx="4.2" ry="4.8" fill="#fbeed2" opacity="0.7"/>
+
+    <polygon points="1,-3.6 3,-9.6 5.6,-4.4" fill="#f3d9a8"/>
+    <polygon points="14,-3.6 12,-9.6 9.4,-4.4" fill="#f3d9a8"/>
+    <circle cx="7.5" cy="-1" r="6.8" fill="#f3d9a8"/>
+    <ellipse cx="3.3" cy="0.9" rx="1.5" ry="1" fill="#f0a8a8" opacity="0.85"/>
+    <ellipse cx="11.7" cy="0.9" rx="1.5" ry="1" fill="#f0a8a8" opacity="0.85"/>
+
+    <path d="M 0.4 -4.6 Q 7.5 -15.4 14.6 -4.6" stroke="#2a2f38" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+    <ellipse cx="0.4" cy="-3" rx="2.1" ry="2.7" fill="#2a2f38"/>
+    <ellipse cx="14.6" cy="-3" rx="2.1" ry="2.7" fill="#2a2f38"/>
+    <ellipse cx="0.4" cy="-3" rx="1.1" ry="1.6" fill="#e05a5a"/>
+    <ellipse cx="14.6" cy="-3" rx="1.1" ry="1.6" fill="#e05a5a"/>
+
+    <path d="M 3.5 -1.4 Q 4.9 0.2 6.3 -1.4" stroke="#3a2a1e" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <path d="M 8.7 -1.4 Q 10.1 0.2 11.5 -1.4" stroke="#3a2a1e" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <path d="M 5.8 2.4 Q 7.5 4.2 9.2 2.4" stroke="#7a4a3a" stroke-width="0.6" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <g class="note1"><text x="18" y="-11" font-family="Georgia, serif" font-size="4.4" fill="#e05a5a">&#9835;</text></g>
+  <g class="note2"><text x="-8" y="-7" font-family="Georgia, serif" font-size="3.6" fill="#e8b04a">&#9834;</text></g>
+  <g class="note3"><text x="6" y="-19" font-family="Georgia, serif" font-size="3.2" fill="#e05a5a">&#9835;</text></g>
+</svg>

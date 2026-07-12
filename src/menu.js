@@ -203,6 +203,12 @@ module.exports = function initMenu(ctx) {
           if (typeof ctx.openDashboard === "function") ctx.openDashboard();
         },
       },
+      {
+        label: t("playMinigame"),
+        click: () => {
+          if (typeof ctx.openMinigamesWindow === "function") ctx.openMinigamesWindow();
+        },
+      },
       buildAutoApproveMenuItem(),
     ];
 
@@ -414,6 +420,12 @@ module.exports = function initMenu(ctx) {
         label: t("openDashboard"),
         click: () => {
           if (typeof ctx.openDashboard === "function") ctx.openDashboard();
+        },
+      },
+      {
+        label: t("playMinigame"),
+        click: () => {
+          if (typeof ctx.openMinigamesWindow === "function") ctx.openMinigamesWindow();
         },
       },
       {

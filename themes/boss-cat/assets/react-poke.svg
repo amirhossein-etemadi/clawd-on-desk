@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-15 -25 45 45">
+  <style>
+    .squish { animation: squish 0.5s cubic-bezier(.36,.07,.19,.97) 1; transform-origin: 7.5px 17px; }
+    @keyframes squish { 0% { transform: scale(1,1); } 30% { transform: scale(1.15,0.85); } 60% { transform: scale(0.92,1.08); } 100% { transform: scale(1,1); } }
+  </style>
+
+  <ellipse cx="7.5" cy="17.5" rx="8.5" ry="1.8" fill="rgba(0,0,0,0.15)"/>
+
+  <g class="squish">
+    <rect x="0" y="3" width="15" height="14.5" rx="6.5" fill="#f3d9a8"/>
+    <ellipse cx="7.5" cy="12" rx="4.2" ry="4.8" fill="#fbeed2" opacity="0.7"/>
+
+    <polygon points="1,-3.6 3,-9.6 5.6,-4.4" fill="#f3d9a8"/>
+    <polygon points="14,-3.6 12,-9.6 9.4,-4.4" fill="#f3d9a8"/>
+    <polygon points="2,-4.6 3.2,-8.2 4.6,-5" fill="#f6bfcb"/>
+    <polygon points="13,-4.6 11.8,-8.2 10.4,-5" fill="#f6bfcb"/>
+    <circle cx="7.5" cy="-1" r="6.8" fill="#f3d9a8"/>
+    <ellipse cx="3.3" cy="0.8" rx="1.6" ry="1.1" fill="#f0a8a8" opacity="0.85"/>
+    <ellipse cx="11.7" cy="0.8" rx="1.6" ry="1.1" fill="#f0a8a8" opacity="0.85"/>
+
+    <path d="M 3.4 -1.6 Q 4.9 -0.2 6.4 -1.6" stroke="#3a2a1e" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <path d="M 8.6 -1.6 Q 10.1 -0.2 11.6 -1.6" stroke="#3a2a1e" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <ellipse cx="7.5" cy="2.2" rx="1.3" ry="1" fill="#7a4a3a"/>
+  </g>
+</svg>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+<title>Minigames</title>
+<style>
+  :root {
+    --bg: #fdf6ec;
+    --panel: #ffffff;
+    --ink: #3a2a1e;
+    --sub: #8a7a6a;
+    --accent: #f6bfcb;
+    --accent2: #f3d9a8;
+    --good: #7fc97f;
+    --bad: #e05a5a;
+    --shadow: rgba(58, 42, 30, 0.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1f;
+      --panel: #262629;
+      --ink: #f1e9df;
+      --sub: #a89a8c;
+      --shadow: rgba(0, 0, 0, 0.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+    user-select: none;
+  }
+  #app {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+</style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="minigames-renderer.js"></script>
+</body>
+</html>

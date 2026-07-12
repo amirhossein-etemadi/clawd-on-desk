@@ -308,6 +308,26 @@ const updateRegistry = {
   allowEdgePinning: requireBoolean("allowEdgePinning"),
   disableMiniMode: requireBoolean("disableMiniMode"),
   freeRoam: requireBoolean("freeRoam"),
+  companionWatcherAutoStart: requireBoolean("companionWatcherAutoStart"),
+  // Pure validator only -- the actual file write to
+  // scripts/companion-settings.json (so the standalone watcher process picks
+  // up the new value) is a post-commit mirror effect in main.js's
+  // SETTINGS_MIRROR_SETTERS, same pattern as freeRoam/companionWatcherAutoStart.
+  companionBreakReminderMinutes: requireIntegerInRange("companionBreakReminderMinutes", 5, 480),
+  companionTelegramAlertsEnabled: requireBoolean("companionTelegramAlertsEnabled"),
+  // Post-commit effect (main.js SETTINGS_MIRROR_SETTERS.companionEquippedAccessory)
+  // mutates the live theme's idle SVG and calls refreshTheme() -- see
+  // applyCompanionAccessory. Silently a no-op if the active theme has no
+  // matching idle-accessory-*.svg file, so an invalid-for-this-theme value
+  // never breaks anything, only fails to visibly change the pet.
+  companionEquippedAccessory: requireEnum("companionEquippedAccessory", ["none", "partyHat", "sunglasses"]),
+  // Phone companion sync (see prefs.js's own comment + cloud/README.md).
+  // Post-commit effects (main.js SETTINGS_MIRROR_SETTERS) mirror all three
+  // to scripts/companion-settings.json for companion-cloud-sync.js to pick
+  // up; relay URL and sync code are allowed empty (not yet configured).
+  cloudSyncEnabled: requireBoolean("cloudSyncEnabled"),
+  cloudRelayUrl: requireString("cloudRelayUrl", { allowEmpty: true }),
+  cloudSyncCode: requireString("cloudSyncCode", { allowEmpty: true }),
   keepSizeAcrossDisplays: requireBoolean("keepSizeAcrossDisplays"),
   fullscreenOverlay: requireBoolean("fullscreenOverlay"),
   mobilePreviewEnabled: requireBoolean("mobilePreviewEnabled"),

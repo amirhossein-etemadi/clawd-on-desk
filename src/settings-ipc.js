@@ -136,6 +136,12 @@ function registerSettingsIpc(options = {}) {
     message: "Tutorial is unavailable",
   }));
   const now = options.now || (() => Date.now());
+  const getCompanionStatus = options.getCompanionStatus
+    || (() => ({ running: false, state: null }));
+  const restartCompanionWatcher = options.restartCompanionWatcher
+    || (() => ({ status: "error", message: "companion watcher unavailable" }));
+  const openCompanionConfigFolder = options.openCompanionConfigFolder
+    || (() => ({ status: "error", message: "companion config folder unavailable" }));
   const aboutHeroSvgPath = options.aboutHeroSvgPath
     || path.join(__dirname, "..", "assets", "svg", "clawd-about-hero.svg");
   const disposers = [];
@@ -202,6 +208,23 @@ function registerSettingsIpc(options = {}) {
       return { status: "error", message: "settings:command payload must be { action, payload }" };
     }
     return settingsController.applyCommand(payload.action, payload.payload);
+  });
+
+  // Settings > Companion tab: live status/restart/config-folder actions.
+  // Deliberately NOT routed through settingsController.applyCommand -- these
+  // aren't persisted-field commands, just "ask the running sidecar / read a
+  // JSON file right now", so a plain handle() is the right weight.
+  handle("companion:get-status", () => {
+    try { return getCompanionStatus(); }
+    catch (err) { return { running: false, state: null, error: err && err.message }; }
+  });
+  handle("companion:restart", () => {
+    try { return restartCompanionWatcher(); }
+    catch (err) { return { status: "error", message: err && err.message }; }
+  });
+  handle("companion:open-config-folder", () => {
+    try { return openCompanionConfigFolder(); }
+    catch (err) { return { status: "error", message: err && err.message }; }
   });
 
   handle("settings:pick-sound-file", async (event, payload) => {

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Ilia Companion</string>
+
+    <string name="label_relay_url">Relay URL</string>
+    <string name="hint_relay_url">https://ilia-companion-sync.your-subdomain.workers.dev</string>
+    <string name="label_sync_code">Pairing code</string>
+    <string name="hint_sync_code">Enter the code from Settings &gt; Companion &gt; Phone Sync</string>
+    <string name="action_save_pairing">Save</string>
+    <string name="action_start_overlay">Start Floating Pet</string>
+    <string name="action_stop_overlay">Stop Floating Pet</string>
+    <string name="overlay_permission_needed">Ilia Companion needs permission to draw over other apps for the floating pet. Tap to grant it.</string>
+    <string name="overlay_permission_button">Grant Overlay Permission</string>
+    <string name="status_disconnected">Not connected</string>
+    <string name="status_connecting">Connecting…</string>
+    <string name="status_connected">Live — mirroring your desktop</string>
+    <string name="status_desktop_offline">Connected to relay, desktop offline</string>
+    <string name="label_level">Level</string>
+    <string name="label_streak">Streak</string>
+    <string name="label_activity">Current activity</string>
+    <string name="activity_idle">Idle</string>
+    <string name="notif_channel_name">Companion overlay</string>
+    <string name="notif_title">Ilia Companion is watching over your desktop</string>
+    <string name="notif_text">Tap to open, or drag the floating pet around your screen.</string>
+</resources>

@@ -1,0 +1,14 @@
+{
+  "name": "ilia-companion-sync",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloudflare Worker relay for Ilia Companion desktop <-> Android phone sync",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^3.90.0"
+  }
+}

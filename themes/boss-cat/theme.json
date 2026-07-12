@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "name": "Cozy Cat",
+  "version": "2.0.0",
+  "author": "Ilia",
+  "description": "A simple, round, cute cat -- clocks in for your coding agent, clocks off to vibe whenever a game, music, or video is detected on the PC.",
+  "license": "Personal use",
+
+  "viewBox": { "x": -15, "y": -25, "width": 45, "height": 45 },
+
+  "layout": {
+    "contentBox": { "x": -4, "y": -10, "width": 23, "height": 27 },
+    "marginBox": { "x": -8, "y": -14, "width": 30, "height": 31 },
+    "centerX": 7.5,
+    "baselineY": 17,
+    "visibleHeightRatio": 0.58,
+    "baselineBottomRatio": 0.05
+  },
+
+  "objectScale": {
+    "widthRatio": 1.9,
+    "heightRatio": 1.3,
+    "offsetX": -0.45,
+    "offsetY": -0.25
+  },
+
+  "eyeTracking": {
+    "enabled": true,
+    "states": ["idle"],
+    "ids": { "eyes": "eyes-js", "body": "body-js", "shadow": "shadow-js" }
+  },
+
+  "sleepSequence": { "mode": "direct" },
+
+  "miniMode": { "supported": false },
+
+  "states": {
+    "idle": ["idle.svg"],
+    "thinking": ["thinking.svg"],
+    "working": ["working.svg"],
+    "error": ["error.svg"],
+    "attention": ["attention.svg"],
+    "notification": ["notification.svg"],
+    "sweeping": { "fallbackTo": "working" },
+    "carrying": { "fallbackTo": "working" },
+    "juggling": ["juggling.svg"],
+    "sleeping": ["sleeping.svg"],
+    "roam": ["roam.svg"]
+  },
+
+  "displayHintMap": {
+    "gaming": "juggling-gaming.svg",
+    "music": "juggling-music.svg",
+    "video": "juggling-video.svg"
+  },
+
+  "reactions": {
+    "drag": { "file": "react-drag.svg" },
+    "clickLeft": { "file": "react-poke.svg", "duration": 2200 },
+    "clickRight": { "file": "react-poke.svg", "duration": 2200 },
+    "annoyed": { "file": "react-annoyed.svg", "duration": 3000 },
+    "double": { "files": ["react-double.svg"], "duration": 3200 }
+  },
+
+  "hitBoxes": {
+    "default": { "x": -1, "y": 2, "w": 17, "h": 15 },
+    "sleeping": { "x": -2, "y": 6, "w": 19, "h": 11 }
+  },
+  "sleepingHitboxFiles": ["sleeping.svg"],
+
+  "timings": {
+    "mouseIdleTimeout": 20000,
+    "mouseSleepTimeout": 60000,
+    "minDisplay": {
+      "attention": 4000,
+      "error": 5000,
+      "working": 1000
+    },
+    "autoReturn": {
+      "attention": 5000,
+      "error": 5000
+    }
+  },
+
+  "_comment_roam": "'roam' is the walking/free-roam animation used by Clawd's built-in wander feature (Settings -> General -> free roam). It only plays while roam is enabled and the pet is idle.",
+  "_comment_juggling": "The 'juggling' state normally means subagent groove. This theme also drives it from companion-watcher.js via session display_svg hints ('gaming' / 'music' / 'video', see displayHintMap above)."
+}

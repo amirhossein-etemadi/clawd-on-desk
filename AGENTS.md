@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file is the entry point for coding agents working in this repository. Keep it short and operational. Deep background lives in `docs/project/`.
+This file is the entry point for coding agents working in this repository. Keep it short and operational. Deep background lives in `docs/project/`. Background on the custom Boss Cat theme, companion-watcher.js (game/music/video reactions), and the Discord presence patch lives in `companion-vault/` (Obsidian vault, start at `companion-vault/00 Index.md`) -- read that instead of re-exploring those files from scratch.
 
 ## Project Overview
 

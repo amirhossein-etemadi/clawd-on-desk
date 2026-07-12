@@ -80,6 +80,8 @@ const {
   createSettingsSizePreviewSession,
 } = require("./settings-size-preview-session");
 const { registerSettingsIpc } = require("./settings-ipc");
+const { createMinigamesWindowRuntime } = require("./minigames-window");
+const { registerMinigamesIpc } = require("./minigames-ipc");
 const createSettingsEffectRouter = require("./settings-effect-router");
 const { registerSessionIpc } = require("./session-ipc");
 const { registerPetInteractionIpc } = require("./pet-interaction-ipc");
@@ -229,6 +231,45 @@ const {
   isAllBubblesHidden,
 } = require("./bubble-policy");
 const loginItemHelpers = require("./login-item");
+const { createCompanionWatcherSidecar } = require("./companion-watcher-sidecar");
+const COMPANION_SETTINGS_PATH = path.join(__dirname, "..", "scripts", "companion-settings.json");
+
+// Writes scripts/companion-settings.json, the small config file
+// companion-watcher.js (a separate Node process) re-reads every poll -- this
+// is how a Settings > Companion change (e.g. break-reminder minutes) reaches
+// that standalone script without a restart. Best-effort: a write failure
+// just means the watcher keeps using its last-known/default value, never a
+// crash.
+const COMPANION_STATE_PATH = path.join(__dirname, "..", "scripts", "companion-state.json");
+const COMPANION_STATE_DEFAULT = Object.freeze({
+  streak: { count: 0, lastActiveDate: null },
+  stats: {},
+  achievements: { nightOwl: false, earlyBird: false, marathon: false, longestSessionSeconds: 0 },
+  progression: { level: 1, title: "Fresh Paws", xp: 0, xpToNext: 140, xpTimeGrantedMinutes: {}, seenGames: [] },
+});
+
+// Read-only snapshot of companion-watcher.js's persisted stats, for the
+// Settings > Companion tab. The watcher process is the only writer; main.js
+// never writes this file, only companion-settings.json (see
+// writeCompanionWatcherSettingsFile below) -- keeping "who owns which file"
+// unambiguous between the two processes.
+function readCompanionStateFile() {
+  try {
+    return JSON.parse(fs.readFileSync(COMPANION_STATE_PATH, "utf8"));
+  } catch {
+    return COMPANION_STATE_DEFAULT;
+  }
+}
+
+function writeCompanionWatcherSettingsFile(patch) {
+  try {
+    let current = {};
+    try { current = JSON.parse(fs.readFileSync(COMPANION_SETTINGS_PATH, "utf8")); } catch {}
+    fs.writeFileSync(COMPANION_SETTINGS_PATH, JSON.stringify({ ...current, ...patch }, null, 2));
+  } catch (err) {
+    console.warn("Clawd: failed to write companion-settings.json:", err && err.message);
+  }
+}
 const PREFS_PATH = path.join(app.getPath("userData"), "clawd-prefs.json");
 const _initialPrefsLoad = prefsModule.load(PREFS_PATH);
 
@@ -308,6 +349,7 @@ let systemWakeRecovery = null;
 let floatingWindowRuntime = null;
 let codexPetMain = null;
 let telegramApprovalSidecar = null;
+let companionWatcherSidecar = null;
 let telegramApprovalSyncPromise = Promise.resolve();
 let telegramApprovalConfigSignature = "";
 let telegramApprovalTokenRevision = 0;
@@ -315,6 +357,8 @@ let _telegramMigrationController = null;
 let telegramNativeRunner = null;
 let telegramCompanion = null;
 let telegramDirectSend = null;
+let telegramFetchTransport = null;
+let companionTelegramAlerts = null;
 let discordPresenceBridge = null;
 let suppressTelegramApprovalSidecarSync = 0;
 let feishuApprovalClient = null;
@@ -594,6 +638,16 @@ const settingsWindowRuntime = createSettingsWindowRuntime({
     endTextScalePreview();
   },
   onAfterClosed: () => maybeDestroyIdleAnimationPreviewPosterWindow(),
+});
+
+// Small standalone window for the minigames feature (see
+// src/minigames-window.js / src/minigames-renderer.js) -- deliberately not
+// routed through settings-window.js's machinery since it doesn't need any
+// of the multi-display bounds/text-scale handling that window owns.
+const minigamesWindowRuntime = createMinigamesWindowRuntime({
+  app,
+  BrowserWindow,
+  nativeTheme,
 });
 
 function getSettingsWindow() {
@@ -1522,6 +1576,9 @@ const _stateCtx = {
     // broadcast — the companion computes synchronously and fires sends async.
     if (telegramCompanion) {
       try { telegramCompanion.onSnapshot(snapshot); } catch {}
+    }
+    if (companionTelegramAlerts) {
+      try { companionTelegramAlerts.onSnapshot(snapshot); } catch {}
     }
     if (discordPresenceBridge) {
       try { discordPresenceBridge.onSnapshot(snapshot); } catch {}
@@ -2627,25 +2684,35 @@ async function initTelegramMigrationController() {
     getLang: () => lang,
     log: telegramApprovalLog,
   });
+  // targetSessionKey is "telegram:<chat>:..." — extract chat id. Shared by
+  // the native runner's getChatId below and by sendCompanionTelegramAlert
+  // (companion streak/break/achievement pings), so both agree on the same
+  // configured chat without duplicating the regex.
+  function resolveTelegramChatId() {
+    const cfg = getTelegramApprovalPrefs();
+    const key = cfg && cfg.targetSessionKey;
+    const m = typeof key === "string" ? key.match(/^telegram:(-?\d+)/) : null;
+    return m ? m[1] : "";
+  }
+
+  // Shared across the native runner AND the companion streak/break alerts
+  // below -- both just need "POST to the Telegram bot API", so one proxied
+  // transport instance is reused rather than opening a second Chromium
+  // session partition for the same bot.
+  telegramFetchTransport = createTelegramFetchTransport({
+    tokenStore,
+    sessionFactory: () => require("electron").session.fromPartition("clawd-telegram", { cache: false }),
+    log: telegramApprovalLog,
+  });
   const nativeRunner = createTelegramNativeRunner({
     tokenStore,
     // issue #359: route the bot's HTTP through Electron's Chromium net stack so
     // it follows the OS system proxy (and PAC/SOCKS), instead of Node's global
     // fetch which ignores system/env proxy. Dedicated in-memory session.
-    transport: createTelegramFetchTransport({
-      tokenStore,
-      sessionFactory: () => require("electron").session.fromPartition("clawd-telegram", { cache: false }),
-      log: telegramApprovalLog,
-    }),
+    transport: telegramFetchTransport,
     getDispatch: () => _telegramMigrationController && _telegramMigrationController.dispatch,
     getLang: () => lang,
-    getChatId: () => {
-      const cfg = getTelegramApprovalPrefs();
-      const key = cfg && cfg.targetSessionKey;
-      // targetSessionKey is "telegram:<chat>:..." — extract chat id.
-      const m = typeof key === "string" ? key.match(/^telegram:(-?\d+)/) : null;
-      return m ? m[1] : "";
-    },
+    getChatId: resolveTelegramChatId,
     getAllowedUserId: () => {
       const cfg = getTelegramApprovalPrefs();
       return (cfg && cfg.allowedTgUserId) || "";
@@ -2669,6 +2736,32 @@ async function initTelegramMigrationController() {
     log: telegramApprovalLog,
   });
   telegramNativeRunner = nativeRunner;
+
+  // Companion streak/break/achievement pings piggyback on the same bot as
+  // approvals -- gated on both the new opt-in pref (default off: this is
+  // extra chatter beyond what the user explicitly set Telegram up for) and
+  // the bot actually being the active, configured owner (NATIVE_ACTIVE +
+  // a resolved chat id), so it can never fire with a half-configured bot.
+  async function sendCompanionTelegramAlert(text) {
+    try {
+      if (_settingsController.get("companionTelegramAlertsEnabled") !== true) return;
+      const snap = _telegramMigrationController && typeof _telegramMigrationController.getSnapshot === "function"
+        ? _telegramMigrationController.getSnapshot()
+        : null;
+      if (!snap || snap.state !== "NATIVE_ACTIVE") return;
+      const chatId = resolveTelegramChatId();
+      if (!chatId || !telegramFetchTransport) return;
+      await telegramFetchTransport({ method: "sendMessage", payload: { chat_id: chatId, text } });
+    } catch (err) {
+      telegramApprovalLog("warn", "companion telegram alert failed", { error: err && err.message });
+    }
+  }
+  const { createCompanionTelegramAlerts } = require("./companion-telegram-alerts");
+  companionTelegramAlerts = createCompanionTelegramAlerts({
+    sendMessage: sendCompanionTelegramAlert,
+    isEnabled: () => _settingsController.get("companionTelegramAlertsEnabled") === true,
+    log: telegramApprovalLog,
+  });
 
   // R1a: completion notifications ride the existing snapshot fanout. The
   // companion holds its own dedupe state (the snapshot carries no prev) and
@@ -3100,12 +3193,60 @@ const _menuCtx = {
   getActiveThemeCapabilities: () => themeRuntime.getActiveThemeCapabilities(),
   ensureUserThemesDir: () => themeLoader.ensureUserThemesDir(),
   openSettingsWindow: () => settingsWindowRuntime.open(),
+  openMinigamesWindow: () => minigamesWindowRuntime.open(),
   showTutorial: () => _tutorial.open(),
 };
 const _menu = require("./menu")(_menuCtx);
 const { t, buildContextMenu, buildTrayMenu, rebuildAllMenus, createTray,
         destroyTray, showPetContextMenu, ensureContextMenuOwner,
         requestAppQuit, applyDockVisibility } = _menu;
+
+// ── Companion cosmetic accessory equip (fun only, see companion-vault/) ──
+//
+// Level-gated cosmetic idle-pose variants (unlock thresholds live in
+// ACCESSORY_UNLOCKS in scripts/companion-watcher.js; the actual art is two
+// idle-accessory-*.svg files shipped alongside Cozy Cat's other idle
+// variants). Equipping mutates the *live* theme object's states.idle[0] --
+// same runtime-mutation pattern already used for sound overrides (see
+// rememberRuntimeSoundOverrideFile in settings-ipc.js) -- then calls both
+// state.js's and tick.js's refreshTheme() so it takes effect immediately,
+// no restart needed (tick.js owns the SVG_IDLE_FOLLOW used for idle
+// rendering; state.js keeps its own copy in sync for state-machine
+// bookkeeping). If the active theme doesn't ship the requested accessory
+// file, this is a silent no-op -- picking an accessory on a theme that
+// doesn't support cosmetics should never break anything.
+const ACCESSORY_IDLE_FILES = {
+  partyHat: "idle-accessory-partyhat.svg",
+  sunglasses: "idle-accessory-sunglasses.svg",
+};
+// Mirrors ACCESSORY_UNLOCKS in scripts/companion-watcher.js (that file is a
+// separate process, so this is a second small source of truth -- keep both
+// in sync if accessory art changes). Enforced here too, not just in the
+// Settings UI, so hand-editing settings.json can't equip something early.
+const ACCESSORY_LEVEL_REQUIREMENTS = { partyHat: 3, sunglasses: 7 };
+let _companionBaseIdleFile = null; // the active theme's own idle[0], captured before the first accessory swap
+
+function applyCompanionAccessory(accessoryKey) {
+  const theme = getActiveTheme();
+  if (!theme || !theme.states || !Array.isArray(theme.states.idle) || !theme.states.idle.length) return;
+  if (_companionBaseIdleFile === null) _companionBaseIdleFile = theme.states.idle[0];
+
+  const file = accessoryKey && ACCESSORY_IDLE_FILES[accessoryKey];
+  if (file) {
+    const assetsDir = theme._assetsDir;
+    const exists = !!assetsDir && fs.existsSync(path.join(assetsDir, file));
+    if (!exists) return; // active theme doesn't ship this accessory -- silent no-op
+    const requiredLevel = ACCESSORY_LEVEL_REQUIREMENTS[accessoryKey];
+    const currentLevel = (readCompanionStateFile().progression || {}).level || 1;
+    if (requiredLevel && currentLevel < requiredLevel) return; // not unlocked yet -- silent no-op, same spirit as the theme-support check above
+    theme.states.idle[0] = file;
+  } else {
+    theme.states.idle[0] = _companionBaseIdleFile;
+  }
+
+  if (typeof _state !== "undefined" && _state && typeof _state.refreshTheme === "function") _state.refreshTheme();
+  if (typeof _tick !== "undefined" && _tick && typeof _tick.refreshTheme === "function") _tick.refreshTheme();
+}
 
 // ── Settings effect router ──
 const SETTINGS_MIRROR_SETTERS = {
@@ -3125,6 +3266,16 @@ const SETTINGS_MIRROR_SETTERS = {
   allowEdgePinning: (v) => { allowEdgePinningCached = v; }, disableMiniMode: (v) => { disableMiniModeCached = v; }, keepSizeAcrossDisplays: (v) => { keepSizeAcrossDisplaysCached = v; resetKeepSizeFrozen(); },
   fullscreenOverlay: (v) => { fullscreenOverlayCached = v; },
   freeRoam: (v) => { _roam.setEnabled(v); },
+  companionWatcherAutoStart: (v) => {
+    if (!companionWatcherSidecar) return;
+    if (v) companionWatcherSidecar.start();
+    else companionWatcherSidecar.stop();
+  },
+  companionBreakReminderMinutes: (v) => { writeCompanionWatcherSettingsFile({ breakReminderMinutes: v }); },
+  companionEquippedAccessory: (v) => { applyCompanionAccessory(v); },
+  cloudSyncEnabled: (v) => { writeCompanionWatcherSettingsFile({ cloudSyncEnabled: v }); },
+  cloudRelayUrl: (v) => { writeCompanionWatcherSettingsFile({ cloudRelayUrl: v }); },
+  cloudSyncCode: (v) => { writeCompanionWatcherSettingsFile({ cloudSyncCode: v }); },
   textScale: (v) => { textScale = v; textScalePreview = null; },
   textScaleByDisplay: (v) => { textScaleByDisplay = v; textScalePreview = null; },
 };
@@ -3350,6 +3501,12 @@ const settingsSizePreviewSession = createSettingsSizePreviewSession({
   },
 });
 
+registerMinigamesIpc({
+  ipcMain,
+  getWindow: () => minigamesWindowRuntime.getWindow(),
+  getLang: () => lang,
+});
+
 registerSettingsIpc({
   ipcMain,
   app,
@@ -3385,6 +3542,22 @@ registerSettingsIpc({
   },
   aboutHeroSvgPath: path.join(__dirname, "..", "assets", "svg", "clawd-about-hero.svg"),
   getLanWsServer: () => _lanWss,
+  getCompanionStatus: () => ({
+    running: !!(companionWatcherSidecar && companionWatcherSidecar.isRunning()),
+    state: readCompanionStateFile(),
+  }),
+  restartCompanionWatcher: () => {
+    if (!companionWatcherSidecar) return { status: "error", message: "companion watcher unavailable" };
+    companionWatcherSidecar.stop();
+    const started = companionWatcherSidecar.start();
+    return started
+      ? { status: "ok" }
+      : { status: "error", message: "scripts/companion-watcher.js not found" };
+  },
+  openCompanionConfigFolder: () => {
+    shell.openPath(path.join(__dirname, "..", "scripts"));
+    return { status: "ok" };
+  },
 });
 
 registerSessionIpc({
@@ -3933,6 +4106,21 @@ if (!gotTheLock) {
     try { syncDiscordPresence("startup"); }
     catch (err) { console.warn("Clawd: discord presence startup failed:", err && err.message); }
     queueFeishuApprovalSync("startup");
+    companionWatcherSidecar = createCompanionWatcherSidecar({ log: sessionLog });
+    if (_settingsController.get("companionWatcherAutoStart") !== false) {
+      companionWatcherSidecar.start();
+    }
+    // Sync once at startup so a value saved before the watcher last ran (or
+    // before this feature existed) is reflected immediately, not just on the
+    // next Settings change.
+    writeCompanionWatcherSettingsFile({
+      breakReminderMinutes: _settingsController.get("companionBreakReminderMinutes") || 90,
+      cloudSyncEnabled: !!_settingsController.get("cloudSyncEnabled"),
+      cloudRelayUrl: _settingsController.get("cloudRelayUrl") || "",
+      cloudSyncCode: _settingsController.get("cloudSyncCode") || "",
+    });
+    try { applyCompanionAccessory(_settingsController.get("companionEquippedAccessory") || "none"); }
+    catch (err) { console.warn("Clawd: companion accessory startup apply failed:", err && err.message); }
     createWindow();
     // WSL agent detection is NOT started here: scanning runs a command inside
     // every installed distro, which boots each stopped VM — too aggressive for
@@ -4026,6 +4214,7 @@ if (!gotTheLock) {
     globalShortcut.unregisterAll();
     void settingsSizePreviewSession.cleanup();
     stopTelegramApprovalSidecar();
+    if (companionWatcherSidecar) companionWatcherSidecar.stop();
     if (discordPresenceBridge) discordPresenceBridge.stop();
     stopFeishuApprovalClient();
     _perm.cleanup();

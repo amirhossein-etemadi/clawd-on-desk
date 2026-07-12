@@ -154,7 +154,12 @@
     "clawd-headphones-groove.svg": "calico-working-juggling.apng",
     "clawd-working-juggling.svg": "calico-working-juggling.apng",
     "clawd-working-conducting.svg": "calico-working-conducting.apng",
-    "clawd-working-thinking.svg": "calico-thinking.apng"
+    "clawd-working-thinking.svg": "calico-thinking.apng",
+    "gaming": "calico-happy.apng",
+    "music": "calico-working-conducting.apng",
+    "video": "calico-dozing.apng",
+    "meeting": "calico-thinking.apng",
+    "typing": "calico-working-typing.apng"
   },
   "timings": {
     "minDisplay": {
@@ -270,7 +275,15 @@
   "transitions": {},
   "sounds": {
     "complete": "complete.mp3",
-    "confirm": "confirm.mp3"
+    "confirm": "confirm.mp3",
+    "companion_gaming": "companion_gaming.wav",
+    "companion_music": "companion_music.wav",
+    "companion_video": "companion_video.wav",
+    "companion_meeting": "companion_meeting.wav",
+    "companion_streak": "companion_streak.wav",
+    "companion_break": "companion_break.wav",
+    "companion_achievement": "companion_achievement.wav",
+    "companion_levelup": "companion_levelup.wav"
   },
   "objectScale": {
     "widthRatio": 0.58,

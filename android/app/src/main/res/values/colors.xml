@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg">#FBEED2</color>
+    <color name="accent">#DE886D</color>
+    <color name="accent_dark">#B8654A</color>
+    <color name="text_primary">#3A2A1E</color>
+    <color name="text_secondary">#7A6A5E</color>
+    <color name="card_bg">#FFFFFF</color>
+    <color name="track_bg">#33000000</color>
+    <color name="status_connected">#5DBF8F</color>
+    <color name="status_disconnected">#E85D5D</color>
+</resources>

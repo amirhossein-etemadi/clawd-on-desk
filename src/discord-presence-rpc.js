@@ -19,6 +19,36 @@ const COARSE_LABEL = Object.freeze({
   waiting: "Waiting for input",
 });
 
+// Boss Cat / companion-watcher: a synthetic session (fixed id, no real coding
+// agent behind it) that reacts to games, music, and video detected on the
+// PC. It rides the existing "juggling" state + session displayHint field
+// (see state-session-snapshot.js) rather than a new agent registry entry, so
+// it needs no changes anywhere else in the session/agent machinery. This
+// block only affects what Discord Rich Presence displays for that one
+// session id -- every other session/state is unaffected.
+const COMPANION_SESSION_ID = "companion-watcher";
+const COMPANION_LABEL = Object.freeze({
+  gaming: "Playing a game",
+  music: "Listening to music",
+  video: "Watching a video",
+  meeting: "In a meeting",
+  typing: "Typing away",
+});
+// Small per-activity glyph prefixed onto the title line so it reads at a
+// glance in Discord's friends list, not just on the expanded profile card.
+const COMPANION_HINT_EMOJI = Object.freeze({
+  gaming: "🎮",
+  music: "🎵",
+  video: "📺",
+  meeting: "📞",
+  typing: "⌨️",
+});
+// Explicitly says this is an automated companion feed, not a hand-typed
+// custom status -- shown as the second (smaller) line under the activity
+// title, per user request ("have a hint that it's not a simple presence
+// update").
+const COMPANION_HINT_TEXT = "🐾 Auto-tracked by Clawd Companion";
+
 const READY_TIMEOUT_MS = 5000;
 const RECONNECT_MAX_MS = 30000;
 // Discord rejects SET_ACTIVITY outright when state/details exceed 128 chars.
@@ -40,20 +70,44 @@ function agentLabel(agentId) {
   return (agent && agent.name) || "Clawd";
 }
 
+// Truncate by code point (not byte/char-unit) so a long title doesn't split a
+// surrogate pair / emoji and doesn't silently make Discord drop the whole
+// activity update for exceeding ACTIVITY_FIELD_MAX.
+function truncateField(text) {
+  return Array.from(String(text || "")).slice(0, ACTIVITY_FIELD_MAX).join("");
+}
+
 function buildPresencePayload(session, privacy = {}) {
+  if (session && session.id === COMPANION_SESSION_ID) {
+    // Prefer the specific session_title companion-watcher.js sends (e.g.
+    // "Playing Elden Ring", "Song — Artist") over the generic per-hint
+    // label, so Discord shows the actual game/track when available.
+    const hint = session.displayHint;
+    const rawLabel = (session.sessionTitle && String(session.sessionTitle).trim())
+      || COMPANION_LABEL[hint]
+      || "Taking a break";
+    const emoji = COMPANION_HINT_EMOJI[hint];
+    // The title line (Discord's `details`, the bold first line) now shows
+    // WHAT you're doing instead of a static "Boss Cat" -- and `state` (the
+    // second line) carries the "this is automated, not a manual status"
+    // hint instead of the activity, which is the flip the user asked for.
+    return {
+      details: truncateField(emoji ? `${emoji} ${rawLabel}` : rawLabel),
+      state: COMPANION_HINT_TEXT,
+      assets: { large_image: CLAWD_ICON_URL, large_text: "Ilia Companion — auto-detected activity, not set by hand" },
+    };
+  }
   const coarse = toCoarseState(session && session.state);
   const activity = {
     details: agentLabel(session && session.agentId),
     state: COARSE_LABEL[coarse],
-    assets: { large_image: CLAWD_ICON_URL, large_text: "Clawd on Desk" },
+    assets: { large_image: CLAWD_ICON_URL, large_text: "Ilia Companion" },
   };
   if (privacy.privacyShowProject && session && session.cwd) {
     // win32.basename splits on both \ and /, so a Windows cwd seen on a POSIX
     // host yields just the folder name instead of leaking the whole path.
     const state = `${COARSE_LABEL[coarse]} · ${path.win32.basename(session.cwd)}`;
-    // Truncate by code point: a long folder name would otherwise make Discord
-    // silently drop the whole activity update.
-    activity.state = Array.from(state).slice(0, ACTIVITY_FIELD_MAX).join("");
+    activity.state = truncateField(state);
   }
   // Allowlist by design: the snapshot also carries sensitive fields
   // (sessionTitle, assistantLastOutput, ...) we deliberately never read.
@@ -361,6 +415,10 @@ function createDiscordPresenceBridge({ getConfig, log, createConnection, ipcPath
 module.exports = {
   OP,
   CLAWD_ICON_URL,
+  COMPANION_LABEL,
+  COMPANION_HINT_EMOJI,
+  COMPANION_HINT_TEXT,
+  truncateField,
   toCoarseState,
   buildPresencePayload,
   encodeFrame,

@@ -22,6 +22,7 @@
     "freeRoam",
     "keepSizeAcrossDisplays",
     "openAtLogin",
+    "companionWatcherAutoStart",
     "hideBubbles",
     "bubbleFollowPet",
     "permissionBubblesEnabled",
@@ -176,6 +177,11 @@
         key: "openAtLogin",
         labelKey: "rowOpenAtLogin",
         descKey: "rowOpenAtLoginDesc",
+      }),
+      helpers.buildSwitchRow({
+        key: "companionWatcherAutoStart",
+        labelKey: "rowCompanionWatcherAutoStart",
+        descKey: "rowCompanionWatcherAutoStartDesc",
       }),
     ]));
 

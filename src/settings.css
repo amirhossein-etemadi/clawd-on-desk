@@ -735,6 +735,33 @@ html, body {
   opacity: 0.45;
   cursor: not-allowed;
 }
+/* Generic single-line text input row control (Phone Sync relay URL, etc). */
+.text-input {
+  box-sizing: border-box;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-bg);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  padding: 0 10px;
+  outline: none;
+}
+.text-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(217, 119, 87, 0.16);
+}
+.companion-sync-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--panel-bg);
+  color: var(--text-primary);
+}
 .bubble-policy-unit {
   font-size: 11px;
   color: var(--text-secondary);

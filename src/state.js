@@ -599,12 +599,67 @@ function applyState(state, svgOverride, options = {}) {
   stateChangedAt = Date.now();
   ctx.idlePaused = false;
 
+  // Boss Cat / companion-watcher (scripts/companion-watcher.js) identifies
+  // its own moments by the raw `event` string it posted, read from the
+  // fixed "companion-watcher" session's recent-events tail -- NOT
+  // `displayHint`, because state-session-events.js only ever keeps
+  // displayHint set while state is working/thinking/juggling; it's nulled
+  // out again the instant the event that carries state "attention" or
+  // "notification" arrives, before this code ever runs.
+  function lastCompanionEvent() {
+    const companion = sessions.get("companion-watcher");
+    const events = companion && Array.isArray(companion.recentEvents) ? companion.recentEvents : null;
+    return events && events.length ? events[events.length - 1].event : null;
+  }
+
   // Sound triggers
   if (state === "attention" || state === "mini-happy") {
-    ctx.playSound("complete");
+    // Streak celebration ("CompanionStreak"), one-time achievements
+    // ("CompanionAchievement" -- night owl / early bird / marathon session /
+    // new-game discovery) and level-ups ("CompanionLevelUp", see the
+    // level/XP progression system in companion-watcher.js) each get their
+    // own fanfare instead of the generic "complete" chime used for real
+    // task completions. Any other cause of "attention" is unaffected.
+    const companionEvent = lastCompanionEvent();
+    if (companionEvent === "CompanionStreak") {
+      ctx.playSound("companion_streak");
+    } else if (companionEvent === "CompanionAchievement") {
+      ctx.playSound("companion_achievement");
+    } else if (companionEvent === "CompanionLevelUp") {
+      ctx.playSound("companion_levelup");
+    } else {
+      ctx.playSound("complete");
+    }
     if (ctx.flashTaskbar) ctx.flashTaskbar();
   } else if (state === "notification" || state === "mini-alert") {
-    if (!applyOptions.muteNotificationSound) ctx.playSound("confirm");
+    if (!applyOptions.muteNotificationSound) {
+      // Break reminder (event "CompanionBreak") gets its own gentle tone
+      // instead of the generic "confirm" ping used for real
+      // permission-request notifications. Flavor quips ("CompanionQuip" --
+      // random one-line commentary, see companion-watcher.js) are
+      // deliberately SILENT: they can fire every ~10 minutes during a long
+      // session, and a chime every time would turn a fun little aside into
+      // a nagging notification sound.
+      const companionEvent = lastCompanionEvent();
+      if (companionEvent === "CompanionBreak") {
+        ctx.playSound("companion_break");
+      } else if (companionEvent !== "CompanionQuip") {
+        ctx.playSound("confirm");
+      }
+    }
+  } else if (state === "juggling") {
+    // Boss Cat / companion-watcher (scripts/companion-watcher.js): plays a
+    // distinct sting per detected activity (gaming/music/video/meeting)
+    // instead of staying silent, using the fixed companion-watcher session
+    // id + its displayHint (see state-session-snapshot.js). Falls back to
+    // playSound's own no-op-on-missing-file behavior for themes that don't
+    // define a matching "companion_<hint>" sound, so this never errors and
+    // never affects real subagent juggling (no session named
+    // "companion-watcher" exists for a real coding agent).
+    const companion = sessions.get("companion-watcher");
+    if (companion && companion.displayHint) {
+      ctx.playSound(`companion_${companion.displayHint}`);
+    }
   }
 
   const svg = svgOverride || resolveVisualBinding(state);

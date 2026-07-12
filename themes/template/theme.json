@@ -75,6 +75,15 @@
     { "minSessions": 1, "file": "juggling.gif" }
   ],
 
+  "displayHintMap": {
+    "_comment": "Optional. Lets the Boss Cat companion add-on (companion-watcher.js -- games/music/video/meeting/typing detection, see companion-vault/ in the clawd-on-desk repo) show distinct art for the 'juggling' state per activity, instead of one generic juggling visual for all of them. Point each key at your own asset and add the matching file to states.juggling above (or just leave these pointing at juggling.gif like below -- it degrades gracefully to 'one juggling look for everything', same as omitting this block entirely). 'typing' fires when the system-wide typing-reaction feature (typing-watcher.py, opt-in, needs `pip install pynput`) detects you're actively at the keyboard in ANY app -- reusing your theme's own 'working' art (if it has one) is usually the easiest choice.",
+    "gaming": "juggling.gif",
+    "music": "juggling.gif",
+    "video": "juggling.gif",
+    "meeting": "juggling.gif",
+    "typing": "juggling.gif"
+  },
+
   "idleAnimations": [
     { "_comment": "Random animations played during idle. Omit this whole array (or leave it empty) to keep idle on states.idle[0]. duration in ms.", "file": "idle-look.gif", "duration": 6500 }
   ],
@@ -101,9 +110,17 @@
   },
 
   "sounds": {
-    "_comment": "Map logical sound names to audio files in sounds/ subdirectory. Omit this block to use built-in defaults. Set a value to null to disable that sound.",
+    "_comment": "Map logical sound names to audio files in sounds/ subdirectory. Omit this block to use built-in defaults. Set a value to null to disable that sound. The companion_* keys below are optional and only matter if you use the Boss Cat companion add-on -- keep these exact filenames (don't need to add your own sounds/ files for them) and they transparently fall back to clawd-on-desk's shared assets/sounds/ copies; give a theme-local file of the same name to override with your own chime, or omit a key to make that one event play silently.",
     "complete": "complete.mp3",
-    "confirm":  "confirm.mp3"
+    "confirm":  "confirm.mp3",
+    "companion_gaming": "companion_gaming.wav",
+    "companion_music": "companion_music.wav",
+    "companion_video": "companion_video.wav",
+    "companion_meeting": "companion_meeting.wav",
+    "companion_streak": "companion_streak.wav",
+    "companion_break": "companion_break.wav",
+    "companion_achievement": "companion_achievement.wav",
+    "companion_levelup": "companion_levelup.wav"
   },
 
   "miniMode": {

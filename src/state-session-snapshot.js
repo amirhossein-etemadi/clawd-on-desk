@@ -228,6 +228,12 @@ function buildSessionSnapshotEntry(id, session, sessionAliases = {}, options = {
     agentId: (session && session.agentId) || null,
     iconUrl: getAgentIconUrl(session && session.agentId),
     state,
+    // Boss Cat / companion-watcher: surfaces the session's display_svg hint
+    // (e.g. "gaming" / "music" / "video") so downstream consumers such as
+    // Discord Rich Presence can show truthful, activity-specific text
+    // instead of the generic coarse "Working" bucket. null for every
+    // ordinary coding-agent session (additive, non-breaking field).
+    displayHint: (session && session.displayHint) || null,
     badge,
     hiddenFromHud,
     hasAlias: !!(alias && typeof alias.title === "string" && alias.title),

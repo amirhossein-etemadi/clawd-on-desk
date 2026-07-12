@@ -1,0 +1,15 @@
+name = "ilia-companion-sync"
+main = "src/worker.js"
+compatibility_date = "2025-01-01"
+
+# Free-tier Workers plan only supports SQLite-backed Durable Objects
+# (new_sqlite_classes below, not the older new_classes/KV-backed kind).
+# See cloud/README.md for deploy instructions.
+
+[[durable_objects.bindings]]
+name = "COMPANION_ROOM"
+class_name = "CompanionRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["CompanionRoom"]

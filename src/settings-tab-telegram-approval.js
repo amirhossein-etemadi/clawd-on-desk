@@ -845,6 +845,14 @@
     rows.push(buildEnabledRow({ ready }));
     rows.push(buildCompletionOutputRow());
     rows.push(buildDirectSendRow({ ready }));
+    // Not part of this tab's own {cfg, saveConfig} object -- companionTelegramAlertsEnabled
+    // is a plain top-level pref (see prefs.js), so it uses the generic switch-row helper
+    // like Settings > General's toggles instead of this file's bespoke row builders.
+    rows.push(helpers.buildSwitchRow({
+      key: "companionTelegramAlertsEnabled",
+      labelKey: "telegramCompanionAlerts",
+      descKey: "telegramCompanionAlertsDesc",
+    }));
     rows.push(buildTestRow({ ready }));
     return helpers.buildSection(t("telegramApprovalStep3Title"), rows);
   }
