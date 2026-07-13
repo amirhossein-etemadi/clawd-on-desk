@@ -14,10 +14,15 @@ class PrefsStore(context: Context) {
         get() = prefs.getString(KEY_SYNC_CODE, "") ?: ""
         set(value) = prefs.edit().putString(KEY_SYNC_CODE, value).apply()
 
+    var petTheme: String
+        get() = prefs.getString(KEY_PET_THEME, PetThemes.CLAWD) ?: PetThemes.CLAWD
+        set(value) = prefs.edit().putString(KEY_PET_THEME, value).apply()
+
     fun isConfigured(): Boolean = relayUrl.isNotBlank() && syncCode.isNotBlank()
 
     companion object {
         private const val KEY_RELAY_URL = "relay_url"
         private const val KEY_SYNC_CODE = "sync_code"
+        private const val KEY_PET_THEME = "pet_theme"
     }
 }

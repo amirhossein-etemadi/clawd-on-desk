@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    <objectAnimator
+        android:duration="4000"
+        android:repeatCount="infinite"
+        android:repeatMode="restart">
+        <propertyValuesHolder android:propertyName="scaleY" android:valueType="floatType">
+            <keyframe android:fraction="0" android:value="1" />
+            <keyframe android:fraction="0.03" android:value="1" />
+            <keyframe android:fraction="0.05" android:value="0.12" />
+            <keyframe android:fraction="0.08" android:value="1" />
+            <keyframe android:fraction="1" android:value="1" />
+        </propertyValuesHolder>
+    </objectAnimator>
+</set>

@@ -109,6 +109,44 @@ test("pickDominantSession skips headless, sleeping, and hiddenFromHud sessions (
   assert.strictEqual(pickDominantSession(allHidden), null);
 });
 
+test("pickDominantSession prefers a coding agent over a game, and a game over the rest", () => {
+  // User preference: agents actively coding outrank everything, then games,
+  // then the rest of the normal state-priority order.
+  const codingVsGame = { sessions: [
+    { id: "companion-watcher", state: "juggling", displayHint: "gaming" }, // juggling=4 beats working=3 in base order
+    { id: "s1", agentId: "claude-code", state: "working" },
+  ] };
+  assert.strictEqual(pickDominantSession(codingVsGame).id, "s1");
+
+  const thinkingVsGame = { sessions: [
+    { id: "companion-watcher", state: "juggling", displayHint: "gaming" },
+    { id: "s1", agentId: "claude-code", state: "thinking" },
+  ] };
+  assert.strictEqual(pickDominantSession(thinkingVsGame).id, "s1");
+
+  // No active agent: the game wins over idle agents.
+  const gameVsIdle = { sessions: [
+    { id: "companion-watcher", state: "juggling", displayHint: "gaming" },
+    { id: "s2", agentId: "claude-code", state: "idle" },
+  ] };
+  assert.strictEqual(pickDominantSession(gameVsIdle).id, "companion-watcher");
+
+  // Companion music does NOT get the game tier, but juggling(4) still beats
+  // idle(1) within the base tier.
+  const musicVsIdle = { sessions: [
+    { id: "companion-watcher", state: "juggling", displayHint: "music" },
+    { id: "s3", agentId: "claude-code", state: "idle" },
+  ] };
+  assert.strictEqual(pickDominantSession(musicVsIdle).id, "companion-watcher");
+
+  // Working beats thinking within the agent tier.
+  const twoAgents = { sessions: [
+    { id: "t", agentId: "codex", state: "thinking" },
+    { id: "w", agentId: "claude-code", state: "working" },
+  ] };
+  assert.strictEqual(pickDominantSession(twoAgents).id, "w");
+});
+
 test("bridge reconnects with the new client_id when the App ID changes while connected", () => {
   const cfg = { enabled: true, applicationId: "111111111111111111", privacyShowProject: false };
   const sockets = [];

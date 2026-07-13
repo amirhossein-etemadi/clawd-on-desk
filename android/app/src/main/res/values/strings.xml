@@ -19,6 +19,16 @@
     <string name="label_streak">Streak</string>
     <string name="label_activity">Current activity</string>
     <string name="activity_idle">Idle</string>
+    <string name="placeholder_xp">Connect to see XP</string>
+    <string name="placeholder_streak">Streak: —</string>
+    <string name="placeholder_activity">Current activity: —</string>
+
+    <string name="label_pet_theme">Pet theme</string>
+    <string name="theme_clawd">Clawd</string>
+    <string name="theme_boss_cat">Cozy Cat</string>
+    <string name="theme_calico">Calico</string>
+    <string name="theme_cloudling">Cloudling</string>
+
     <string name="notif_channel_name">Companion overlay</string>
     <string name="notif_title">Ilia Companion is watching over your desktop</string>
     <string name="notif_text">Tap to open, or drag the floating pet around your screen.</string>

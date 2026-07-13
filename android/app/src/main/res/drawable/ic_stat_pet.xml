@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status-bar small icon: white silhouette of the clawd pixel crab
+     (status bar icons are alpha-only; Android tints them). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="17"
+    android:viewportHeight="17">
+  <group android:translateX="1" android:translateY="2.5">
+    <path android:pathData="M2,0h11v7h-11z" android:fillColor="#FFFFFFFF" />
+    <path android:pathData="M0,3h2v2h-2z" android:fillColor="#FFFFFFFF" />
+    <path android:pathData="M13,3h2v2h-2z" android:fillColor="#FFFFFFFF" />
+    <path android:pathData="M3,7h1v4h-1z" android:fillColor="#FFFFFFFF" />
+    <path android:pathData="M5,7h1v4h-1z" android:fillColor="#FFFFFFFF" />
+    <path android:pathData="M9,7h1v4h-1z" android:fillColor="#FFFFFFFF" />
+    <path android:pathData="M11,7h1v4h-1z" android:fillColor="#FFFFFFFF" />
+  </group>
+</vector>

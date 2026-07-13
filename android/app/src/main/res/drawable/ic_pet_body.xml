@@ -7,7 +7,7 @@
          palette (see theme.json in Clawd pet/boss-cat). Kept deliberately
          simple/geometric (unlike the hand-illustrated Calico/Cloudling
          themes) so it renders identically regardless of which desktop
-         theme you're actually using -- a per-theme Android art pass is a
+         theme you're actually using; a per-theme Android art pass is a
          possible future improvement, not attempted in this first version. -->
     <path android:fillColor="#33000000" android:pathData="M28,92 a22,6 0 1,0 44,0 a22,6 0 1,0 -44,0 Z"/>
     <path android:fillColor="#DE886D" android:pathData="M22,34 L14,8 L38,28 Z"/>

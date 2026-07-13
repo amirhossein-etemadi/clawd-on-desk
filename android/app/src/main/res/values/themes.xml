@@ -1,9 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.IliaCompanion" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <!-- Deliberately Light (not DayNight): the whole app is designed around
+         the desktop companion's warm-cream palette with hardcoded light
+         card/background colors, so letting DayNight flip text colors to
+         white in system dark mode made EditText text/hints invisible on the
+         white cards. Forcing the light variant keeps text and surfaces in
+         agreement regardless of the system setting. -->
+    <style name="Theme.IliaCompanion" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/accent</item>
-        <item name="colorPrimaryDark">@color/accent_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryVariant">@color/accent_dark</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorSecondary">@color/accent</item>
+        <item name="colorSecondaryVariant">@color/accent_dark</item>
+        <item name="colorOnSecondary">@android:color/white</item>
         <item name="android:windowBackground">@color/bg</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_hint</item>
+        <item name="android:editTextColor">@color/text_primary</item>
+        <item name="colorControlNormal">@color/text_hint</item>
+        <item name="colorControlActivated">@color/accent</item>
+        <item name="colorControlHighlight">@color/accent_ripple</item>
+        <!-- Edge-to-edge: bars are transparent, content insets are applied
+             in MainActivity via WindowInsets; cream background needs dark
+             status/nav icons. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 </resources>

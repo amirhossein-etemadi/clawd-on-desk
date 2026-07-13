@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/pet_clawd_gaming">
+    <target android:name="body" android:animation="@animator/pca_ga_rock" />
+    <target android:name="eyes" android:animation="@animator/pca_ga_track" />
+    <target android:name="armL" android:animation="@animator/pca_ga_arml" />
+    <target android:name="armR" android:animation="@animator/pca_ga_armr" />
+    <target android:name="ball1" android:animation="@animator/pca_ga_b1" />
+    <target android:name="ball2" android:animation="@animator/pca_ga_b2" />
+    <target android:name="ball3" android:animation="@animator/pca_ga_b3" />
+</animated-vector>

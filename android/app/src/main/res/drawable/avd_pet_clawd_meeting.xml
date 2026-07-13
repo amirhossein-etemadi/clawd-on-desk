@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/pet_clawd_meeting">
+    <target android:name="body" android:animation="@animator/pca_me_tilt" />
+    <target android:name="eyes" android:animation="@animator/pca_blink" />
+    <target android:name="bubble" android:animation="@animator/pca_me_float" />
+    <target android:name="dot1" android:animation="@animator/pca_me_dot1" />
+    <target android:name="dot2" android:animation="@animator/pca_me_dot2" />
+    <target android:name="dot3" android:animation="@animator/pca_me_dot3" />
+</animated-vector>

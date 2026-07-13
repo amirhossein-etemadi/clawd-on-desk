@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/pet_clawd_typing">
+    <target android:name="body" android:animation="@animator/pca_ty_bounce" />
+    <target android:name="eyes" android:animation="@animator/pca_blink" />
+    <target android:name="armL" android:animation="@animator/pca_ty_arml" />
+    <target android:name="armR" android:animation="@animator/pca_ty_armr" />
+    <target android:name="cl1" android:animation="@animator/pca_ty_cl1" />
+    <target android:name="cl2" android:animation="@animator/pca_ty_cl2" />
+    <target android:name="cl3" android:animation="@animator/pca_ty_cl3" />
+    <target android:name="cl4" android:animation="@animator/pca_ty_cl4" />
+</animated-vector>

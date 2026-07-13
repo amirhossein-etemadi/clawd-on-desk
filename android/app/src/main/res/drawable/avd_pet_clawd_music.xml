@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/pet_clawd_music">
+    <target android:name="body" android:animation="@animator/pca_mu_sway" />
+    <target android:name="armL" android:animation="@animator/pca_mu_arml" />
+    <target android:name="armR" android:animation="@animator/pca_mu_armr" />
+    <target android:name="noteL" android:animation="@animator/pca_mu_notel" />
+    <target android:name="noteR" android:animation="@animator/pca_mu_noter" />
+</animated-vector>

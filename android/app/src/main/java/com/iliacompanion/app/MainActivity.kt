@@ -18,6 +18,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 
 class MainActivity : AppCompatActivity(), RelayListener {
 
@@ -53,6 +56,7 @@ class MainActivity : AppCompatActivity(), RelayListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        applyEdgeToEdgeInsets()
         prefs = PrefsStore(this)
 
         relayUrlInput = findViewById(R.id.relayUrlInput)
@@ -69,11 +73,30 @@ class MainActivity : AppCompatActivity(), RelayListener {
         relayUrlInput.setText(prefs.relayUrl)
         syncCodeInput.setText(prefs.syncCode.uppercase())
 
+        setupThemePicker()
         findViewById<Button>(R.id.savePairingButton).setOnClickListener { savePairing() }
         findViewById<Button>(R.id.grantPermissionButton).setOnClickListener { requestOverlayPermission() }
         toggleOverlayButton.setOnClickListener { toggleOverlay() }
 
         requestNotificationPermissionIfNeeded()
+    }
+
+    // targetSdk 35 enforces edge-to-edge: without this, content draws under
+    // the status/nav bars (the title was clipped by the status bar). Pads the
+    // scrollable root by the system-bar + cutout insets; clipToPadding=false
+    // in the layout lets content still scroll edge-to-edge underneath.
+    private fun applyEdgeToEdgeInsets() {
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
+        controller.isAppearanceLightStatusBars = true
+        controller.isAppearanceLightNavigationBars = true
+        val root = findViewById<android.view.View>(R.id.rootScroll)
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            insets
+        }
     }
 
     // Android 13+ requires runtime permission to actually show the
@@ -102,6 +125,30 @@ class MainActivity : AppCompatActivity(), RelayListener {
             boundService?.setStatsListener(null)
             unbindService(connection)
             isBound = false
+        }
+    }
+
+    private fun setupThemePicker() {
+        val group = findViewById<android.widget.RadioGroup>(R.id.themeGroup)
+        val preview = findViewById<android.widget.ImageView>(R.id.themePreview)
+        val idByTheme = mapOf(
+            PetThemes.CLAWD to R.id.themeClawd,
+            PetThemes.BOSS_CAT to R.id.themeBossCat,
+            PetThemes.CALICO to R.id.themeCalico,
+            PetThemes.CLOUDLING to R.id.themeCloudling
+        )
+        fun showPreview(theme: String) {
+            preview.setImageResource(PetThemes.drawableFor(theme, null))
+            (preview.drawable as? android.graphics.drawable.Animatable)?.start()
+        }
+        group.check(idByTheme[prefs.petTheme] ?: R.id.themeClawd)
+        showPreview(prefs.petTheme)
+        group.setOnCheckedChangeListener { _, checkedId ->
+            val theme = idByTheme.entries.firstOrNull { it.value == checkedId }?.key
+                ?: PetThemes.CLAWD
+            prefs.petTheme = theme
+            showPreview(theme)
+            boundService?.applyTheme(theme)
         }
     }
 
@@ -162,7 +209,11 @@ class MainActivity : AppCompatActivity(), RelayListener {
             startService(intent)
         }
         bindToService()
-        refreshToggleButtonLabel()
+        // isRunning flips asynchronously in the service's onCreate, so
+        // refreshToggleButtonLabel() would still read "not running" here --
+        // set the label for the state we just requested instead.
+        toggleOverlayButton.text = getString(R.string.action_stop_overlay)
+        statusText.setText(R.string.status_connecting)
     }
 
     private fun stopOverlay() {

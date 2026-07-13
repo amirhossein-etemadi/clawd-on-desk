@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    <objectAnimator
+        android:duration="6000"
+        android:repeatCount="infinite"
+        android:repeatMode="restart">
+        <propertyValuesHolder android:propertyName="fillAlpha" android:valueType="floatType">
+            <keyframe android:fraction="0" android:value="0" />
+            <keyframe android:fraction="0.18" android:value="0" />
+            <keyframe android:fraction="0.26" android:value="0.8" />
+            <keyframe android:fraction="0.85" android:value="0.8" />
+            <keyframe android:fraction="0.93" android:value="0" />
+            <keyframe android:fraction="1" android:value="0" />
+        </propertyValuesHolder>
+    </objectAnimator>
+</set>

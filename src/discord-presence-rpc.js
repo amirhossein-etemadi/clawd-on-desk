@@ -152,6 +152,30 @@ function randomNonce() {
   try { return crypto.randomUUID(); } catch { return `${process.pid}.${Date.now()}`; }
 }
 
+// Discord-specific tiering on top of STATE_PRIORITY (user preference):
+//   tier 2 — a real coding agent actively working or thinking ("agents
+//            coding come first"; working outranks thinking via the base
+//            state priority),
+//   tier 1 — the companion-watcher session while a game is detected,
+//   tier 0 — everything else (companion music/video/typing, idle agents,
+//            waiting/error states, ...) in the existing STATE_PRIORITY
+//            order.
+// Only affects what Discord shows; the pet/HUD keep their own priorities.
+const DISCORD_TIER_SPAN = 100; // > max STATE_PRIORITY value
+
+function discordPresenceRank(session) {
+  const statePriority = getStatePriority(session.state, STATE_PRIORITY);
+  const isCompanion = session.id === COMPANION_SESSION_ID;
+  const coarse = toCoarseState(session.state);
+  if (!isCompanion && (coarse === "working" || coarse === "thinking")) {
+    return 2 * DISCORD_TIER_SPAN + statePriority;
+  }
+  if (isCompanion && session.displayHint === "gaming") {
+    return 1 * DISCORD_TIER_SPAN + statePriority;
+  }
+  return statePriority;
+}
+
 function pickDominantSession(snapshot) {
   const sessions = snapshot && Array.isArray(snapshot.sessions) ? snapshot.sessions : [];
   let best = null;
@@ -161,7 +185,7 @@ function pickDominantSession(snapshot) {
     // session is "active" (this also drops superseded Codex sessions, which the
     // snapshot builder folds into hiddenFromHud).
     if (!s || s.headless || s.state === "sleeping" || s.hiddenFromHud) continue;
-    const p = getStatePriority(s.state, STATE_PRIORITY);
+    const p = discordPresenceRank(s);
     if (p > bestPriority) { bestPriority = p; best = s; }
   }
   return best;

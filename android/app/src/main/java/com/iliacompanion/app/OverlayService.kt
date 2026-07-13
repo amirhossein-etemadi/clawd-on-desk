@@ -41,15 +41,30 @@ class OverlayService : Service(), RelayListener {
     private var overlayView: View? = null
     private var relayClient: RelayClient? = null
     private var statsListener: RelayListener? = null
+    private var petTheme: String = PetThemes.CLAWD
+    private var currentArtRes: Int = 0
+    private var breatheX: ObjectAnimator? = null
+    private var breatheY: ObjectAnimator? = null
+    private var lastConnected: Boolean = false
+    private var breatheEnabled: Boolean = false
 
     override fun onBind(intent: Intent?): IBinder = binder
 
     fun setStatsListener(listener: RelayListener?) {
         statsListener = listener
+        // Replay current state so a re-opened MainActivity shows live info
+        // immediately instead of stale "Not connected" text.
+        listener?.onConnectionChanged(lastConnected)
         relayClient?.lastState?.let { listener?.onState(it) }
     }
 
     fun currentState(): CompanionState? = relayClient?.lastState
+
+    /** Called from MainActivity when the user picks a different pet theme. */
+    fun applyTheme(theme: String) {
+        petTheme = theme
+        setPetArt(relayClient?.lastState?.activity)
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -93,6 +108,7 @@ class OverlayService : Service(), RelayListener {
     }
 
     override fun onConnectionChanged(connected: Boolean) {
+        lastConnected = connected
         statsListener?.onConnectionChanged(connected)
     }
 
@@ -101,6 +117,7 @@ class OverlayService : Service(), RelayListener {
     private fun addOverlayView() {
         val wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager = wm
+        petTheme = PrefsStore(this).petTheme
         val view = LayoutInflater.from(this).inflate(R.layout.overlay_pet, null)
 
         val overlayType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -124,9 +141,35 @@ class OverlayService : Service(), RelayListener {
         attachDragAndTap(view, params, wm)
         wm.addView(view, params)
         overlayView = view
+        setPetArt(null)
+    }
+
+    // Gentle breathe loop for raster themes (clawd's AVDs animate
+    // themselves) -- one pair of reusable animators on the ImageView, so no
+    // per-frame decodes or allocations while idling on screen all day.
+    private fun startBreatheAnimation(body: ImageView) {
+        body.post {
+            if (!breatheEnabled || breatheX != null) return@post
+            body.pivotX = body.width / 2f
+            body.pivotY = body.height.toFloat()
+            breatheX = ObjectAnimator.ofFloat(body, "scaleX", 1f, 1.02f).apply {
+                duration = 1600
+                repeatCount = ObjectAnimator.INFINITE
+                repeatMode = ObjectAnimator.REVERSE
+                start()
+            }
+            breatheY = ObjectAnimator.ofFloat(body, "scaleY", 1f, 0.98f).apply {
+                duration = 1600
+                repeatCount = ObjectAnimator.INFINITE
+                repeatMode = ObjectAnimator.REVERSE
+                start()
+            }
+        }
     }
 
     private fun removeOverlayView() {
+        breatheX?.cancel(); breatheX = null
+        breatheY?.cancel(); breatheY = null
         val wm = windowManager ?: return
         overlayView?.let {
             try { wm.removeView(it) } catch (_: Exception) { /* already removed */ }
@@ -186,24 +229,36 @@ class OverlayService : Service(), RelayListener {
 
     private fun updatePetVisuals(state: CompanionState) {
         val view = overlayView ?: return
-        val badge = view.findViewById<ImageView>(R.id.petBadge)
-        val levelBadge = view.findViewById<TextView>(R.id.petLevelBadge)
+        setPetArt(state.activity)
+        view.findViewById<TextView>(R.id.petLevelBadge).text = "Lv${state.level}"
+    }
 
-        val badgeRes = when (state.activity) {
-            "gaming" -> R.drawable.ic_badge_gaming
-            "music" -> R.drawable.ic_badge_music
-            "video" -> R.drawable.ic_badge_video
-            "meeting" -> R.drawable.ic_badge_meeting
-            "typing" -> R.drawable.ic_badge_typing
-            else -> null
-        }
-        if (badgeRes != null) {
-            badge.setImageResource(badgeRes)
-            badge.visibility = View.VISIBLE
+    // Themed per-activity art (same mapping as the desktop's
+    // displayHintMap). Resource id is cached so repeated state pushes with
+    // the same activity don't re-inflate the drawable. Clawd art is an
+    // AnimatedVectorDrawable (runs on RenderThread, cheap for an always-on
+    // overlay) and needs start(); raster themes keep the view-level breathe.
+    private fun setPetArt(activity: String?) {
+        val view = overlayView ?: return
+        val res = PetThemes.drawableFor(petTheme, activity)
+        if (res == currentArtRes) return
+        currentArtRes = res
+        val body = view.findViewById<ImageView>(R.id.petBody)
+        body.setImageResource(res)
+        (body.drawable as? android.graphics.drawable.Animatable)?.start()
+        setBreatheEnabled(body, !PetThemes.hasBuiltInAnimation(petTheme))
+    }
+
+    private fun setBreatheEnabled(body: ImageView, enabled: Boolean) {
+        breatheEnabled = enabled
+        if (enabled) {
+            if (breatheX == null) startBreatheAnimation(body)
         } else {
-            badge.visibility = View.GONE
+            breatheX?.cancel(); breatheX = null
+            breatheY?.cancel(); breatheY = null
+            body.scaleX = 1f
+            body.scaleY = 1f
         }
-        levelBadge.text = "Lv${state.level}"
     }
 
     // ---------- notification ----------
@@ -233,7 +288,7 @@ class OverlayService : Service(), RelayListener {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(getString(R.string.notif_title))
             .setContentText(getString(R.string.notif_text))
-            .setSmallIcon(android.R.drawable.ic_menu_view)
+            .setSmallIcon(R.drawable.ic_stat_pet)
             .setContentIntent(pendingIntent)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_MIN)
