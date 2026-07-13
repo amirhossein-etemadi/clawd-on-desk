@@ -30,6 +30,11 @@
     <string name="theme_cloudling">Cloudling</string>
 
     <string name="notif_channel_name">Companion overlay</string>
+    <string name="notif_alerts_channel_name">Companion alerts</string>
+    <string name="notify_level_up">Level up! 🎉</string>
+    <string name="notify_streak">Streak milestone 🔥</string>
+    <string name="notify_achievement">Achievement unlocked ⭐</string>
+    <string name="notify_break">Break reminder 🐾</string>
     <string name="notif_title">Ilia Companion is watching over your desktop</string>
     <string name="notif_text">Tap to open, or drag the floating pet around your screen.</string>
 </resources>

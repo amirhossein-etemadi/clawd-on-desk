@@ -62,6 +62,12 @@ deploying.
 - The phone can send `{"type":"reaction",...}` messages back (e.g. "petted
   the mirror"), forwarded to the desktop as a cosmetic-only hint — it never
   mutates your real XP/level/progression, which stays desktop-authoritative.
+- The desktop also pushes `{"type":"notify",...}` messages for discrete
+  events worth a phone notification (level-ups, streak milestones,
+  achievements, break reminders). These fan out to every connected phone —
+  a sync code supports any number of paired devices — but are deliberately
+  not persisted: a stale reminder shouldn't pop up when a phone reconnects
+  an hour later.
 - If the desktop is offline, the phone just shows the last synced state; if
   the relay itself is unreachable, both apps fail open (desktop pet and
   Android overlay keep working locally, sync just pauses).

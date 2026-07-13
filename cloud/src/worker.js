@@ -21,6 +21,7 @@
 const SYNC_CODE_RE = /^[A-Z2-9]{8,12}$/; // Crockford-ish base32, no 0/1/I/O/L confusion
 const MAX_STATE_BYTES = 8192; // generous cap -- real payloads are ~1-2KB
 const MAX_REACTION_BYTES = 512;
+const MAX_NOTIFY_BYTES = 2048;
 
 export class CompanionRoom {
   constructor(state, env) {
@@ -97,6 +98,16 @@ export class CompanionRoom {
       await this.state.storage.put("lastState", this.lastState);
       for (const other of this.sockets) {
         if (other.role === "phone") this.safeSend(other.ws, { type: "state", data: this.lastState });
+      }
+    } else if (conn.role === "desktop" && msg.type === "notify") {
+      // Transient phone notification (level-up, streak milestone, break
+      // reminder, ...). Broadcast to every connected phone -- a sync code
+      // supports any number of paired devices -- but deliberately not
+      // persisted: a reminder from an hour ago shouldn't pop up when a
+      // phone reconnects later.
+      if (raw.length > MAX_NOTIFY_BYTES) return;
+      for (const other of this.sockets) {
+        if (other.role === "phone") this.safeSend(other.ws, { type: "notify", data: msg.data });
       }
     } else if (conn.role === "phone" && msg.type === "reaction") {
       // Phone taps/pets the mirror -- forward to the desktop as a

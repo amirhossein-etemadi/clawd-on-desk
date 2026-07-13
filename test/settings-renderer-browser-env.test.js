@@ -1046,6 +1046,32 @@ function loadTelegramApprovalTabForTest({
         el.classList.toggle("pending", !!options.pending);
         el.setAttribute("aria-checked", checked ? "true" : "false");
       },
+      // Minimal stand-in for settings-ui-core's generic pref switch row --
+      // just enough DOM for tabs that mix bespoke rows with generic ones
+      // (e.g. telegram-approval's companionTelegramAlertsEnabled row).
+      buildSwitchRow: ({ key, labelKey, descKey } = {}) => {
+        const row = document.createElement("div");
+        row.className = "row";
+        if (key) row.dataset.prefKey = key;
+        const text = document.createElement("div");
+        text.className = "row-text";
+        const label = document.createElement("span");
+        label.className = "row-label";
+        label.textContent = labelKey || "";
+        text.appendChild(label);
+        if (descKey) {
+          const desc = document.createElement("span");
+          desc.className = "row-desc";
+          desc.textContent = descKey;
+          text.appendChild(desc);
+        }
+        row.appendChild(text);
+        const sw = document.createElement("span");
+        sw.className = "switch";
+        sw.setAttribute("role", "switch");
+        row.appendChild(sw);
+        return row;
+      },
       // Mirror the real buildCollapsibleGroup just enough that header content,
       // title/summary, and children all end up in the DOM tree; collapsed
       // behaviour is exercised by the real component's own tests.

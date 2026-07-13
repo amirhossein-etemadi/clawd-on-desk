@@ -14,6 +14,9 @@ interface RelayListener {
     fun onState(state: CompanionState) {}
     fun onPresence(info: PresenceInfo) {}
     fun onConnectionChanged(connected: Boolean) {}
+    /** Transient desktop event worth a phone notification (level-up,
+     *  streak milestone, achievement, break reminder). */
+    fun onNotify(event: String, title: String) {}
 }
 
 /**
@@ -116,6 +119,14 @@ class RelayClient(private val relayUrl: String, private val syncCode: String) {
                         phoneCount = data.optInt("phoneCount", 0)
                     )
                     handler.post { listener?.onPresence(info) }
+                }
+                "notify" -> {
+                    val data = obj.getJSONObject("data")
+                    val event = data.optString("event", "")
+                    val title = data.optString("title", "")
+                    if (title.isNotBlank()) {
+                        handler.post { listener?.onNotify(event, title) }
+                    }
                 }
                 // "pong" -- no-op, just confirms the relay is alive
             }

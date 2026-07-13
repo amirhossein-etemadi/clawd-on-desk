@@ -107,6 +107,38 @@ class OverlayService : Service(), RelayListener {
         statsListener?.onPresence(info)
     }
 
+    // Desktop event mirrored to the phone (level-up, streak milestone,
+    // achievement, break reminder) -- raise a real system notification on
+    // the alerts channel (default importance, unlike the silent ongoing
+    // foreground-service one).
+    override fun onNotify(event: String, title: String) {
+        val label = when (event) {
+            "CompanionLevelUp" -> getString(R.string.notify_level_up)
+            "CompanionStreak" -> getString(R.string.notify_streak)
+            "CompanionAchievement" -> getString(R.string.notify_achievement)
+            "CompanionBreak" -> getString(R.string.notify_break)
+            else -> getString(R.string.app_name)
+        }
+        val openIntent = Intent(this, MainActivity::class.java)
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_IMMUTABLE else 0
+        val pendingIntent = PendingIntent.getActivity(this, 1, openIntent, flags)
+        val notification = NotificationCompat.Builder(this, ALERTS_CHANNEL_ID)
+            .setContentTitle(label)
+            .setContentText(title)
+            .setSmallIcon(R.drawable.ic_stat_pet)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .build()
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        try {
+            manager.notify(nextAlertId++, notification)
+        } catch (_: SecurityException) {
+            // POST_NOTIFICATIONS denied -- the alert is simply not shown
+        }
+        statsListener?.onNotify(event, title)
+    }
+
     override fun onConnectionChanged(connected: Boolean) {
         lastConnected = connected
         statsListener?.onConnectionChanged(connected)
@@ -265,14 +297,20 @@ class OverlayService : Service(), RelayListener {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 getString(R.string.notif_channel_name),
                 NotificationManager.IMPORTANCE_MIN
             )
             channel.setShowBadge(false)
-            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager.createNotificationChannel(channel)
+            val alerts = NotificationChannel(
+                ALERTS_CHANNEL_ID,
+                getString(R.string.notif_alerts_channel_name),
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            manager.createNotificationChannel(alerts)
         }
     }
 
@@ -297,7 +335,9 @@ class OverlayService : Service(), RelayListener {
 
     companion object {
         private const val CHANNEL_ID = "ilia_companion_overlay"
+        private const val ALERTS_CHANNEL_ID = "ilia_companion_alerts"
         private const val NOTIFICATION_ID = 1001
+        private var nextAlertId = 2001
         private const val TAP_SLOP_PX = 16
         private const val TAP_MAX_MS = 250L
 

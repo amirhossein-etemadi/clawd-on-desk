@@ -89,6 +89,23 @@ Thinking when you prompt, typing when tools run, grooving or juggling for subage
 - **Installable** — it's a PWA: add it to your home screen for an app-like experience
 > The mobile companion line — from the first prototype to token rotation — is built and led by core contributor [@Bynlk](https://github.com/Bynlk), who also maintains [clawd-on-mobile](https://github.com/Bynlk/clawd-on-mobile), a sister fork with a native Android app.
 
+### Native Android Companion (Ilia Companion)
+A native Android app (in [`android/`](android/)) that mirrors your desktop pet anywhere — not just on your LAN — over a tiny self-hosted Cloudflare Worker relay (in [`cloud/`](cloud/)):
+
+- **Floating overlay pet** — a draggable chat-head-style pet (same "draw over other apps" mechanism as Messenger) that mirrors your desktop companion's live activity: coding, gaming, music, video, meetings, typing
+- **All 4 themes, animated** — Clawd, Cozy Cat, Calico, and Cloudling, switchable in-app; the Clawd theme ships as AnimatedVectorDrawables generated from the same SVG keyframes as the desktop art (typing arms, floating music notes, juggling balls, thinking-bubble dots), running on Android's RenderThread for minimal battery cost
+- **Phone notifications** — level-ups, streak milestones, achievements, and break reminders detected on the desktop pop up as real Android notifications on every paired phone
+- **Unlimited paired devices** — every device connected with the same sync code receives live state and notifications simultaneously; pairing is one relay URL + one code from **Settings → Companion → Phone Sync**
+- **Live stats screen** — level, XP progress, streak, and current activity, plus tap-to-poke reactions relayed back to the desktop pet
+- **Privacy-preserving relay** — the Worker only ever sees the small companion-state summary (activity label, level, XP, streak) and celebration titles; never your code, files, or session content. You deploy it to your own Cloudflare account (free tier is plenty): see [`cloud/README.md`](cloud/README.md)
+
+Build & install (needs Android SDK 35 + JDK 17, phone with USB debugging):
+
+```bash
+cd android
+./gradlew installDebug   # .\gradlew.bat installDebug on Windows
+```
+
 ### System
 - **Click-through** — transparent areas pass clicks to windows below; only Clawd's body is interactive
 - **Position memory** — Clawd remembers where you left it across restarts (including mini mode)
