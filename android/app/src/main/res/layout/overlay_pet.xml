@@ -3,12 +3,28 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
-    <ImageView
-        android:id="@+id/petBody"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        android:src="@drawable/pet_clawd_idle"
-        android:contentDescription="@string/app_name" />
+    <!-- Body + cosmetic move together: tap-bounce and the breathe loop
+         animate this frame, and OverlayService resizes it to the user's
+         pet-size preference. -->
+    <FrameLayout
+        android:id="@+id/petSprite"
+        android:layout_width="88dp"
+        android:layout_height="88dp">
+
+        <ImageView
+            android:id="@+id/petBody"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/pet_clawd_idle"
+            android:contentDescription="@string/app_name" />
+
+        <ImageView
+            android:id="@+id/petCosmetic"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            android:importantForAccessibility="no" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/petLevelBadge"

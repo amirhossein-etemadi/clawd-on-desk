@@ -11,4 +11,11 @@
     <color name="track_bg">#33000000</color>
     <color name="status_connected">#5DBF8F</color>
     <color name="status_disconnected">#E85D5D</color>
+
+    <!-- Stage / picker chrome -->
+    <color name="stage_floor">#F8ECD2</color>
+    <color name="pill_bg">#F4E6C9</color>
+    <color name="chip_border">#E8D9BD</color>
+    <color name="chip_selected_bg">#FDF3E4</color>
+    <color name="divider">#EFE3CB</color>
 </resources>

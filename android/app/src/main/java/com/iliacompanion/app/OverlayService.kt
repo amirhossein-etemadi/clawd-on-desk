@@ -42,6 +42,8 @@ class OverlayService : Service(), RelayListener {
     private var relayClient: RelayClient? = null
     private var statsListener: RelayListener? = null
     private var petTheme: String = PetThemes.CLAWD
+    private var petCosmetic: String = Cosmetics.NONE
+    private var petSizeDp: Int = PrefsStore.DEFAULT_PET_SIZE_DP
     private var currentArtRes: Int = 0
     private var breatheX: ObjectAnimator? = null
     private var breatheY: ObjectAnimator? = null
@@ -64,7 +66,55 @@ class OverlayService : Service(), RelayListener {
     fun applyTheme(theme: String) {
         petTheme = theme
         setPetArt(relayClient?.lastState?.activity)
+        applyCosmeticView()
     }
+
+    /** Called from MainActivity when the user picks a different cosmetic. */
+    fun applyCosmetic(cosmetic: String) {
+        petCosmetic = cosmetic
+        applyCosmeticView()
+    }
+
+    /** Called live from MainActivity's size slider. */
+    fun applySize(sizeDp: Int) {
+        petSizeDp = sizeDp
+        val view = overlayView ?: return
+        val sprite = view.findViewById<View>(R.id.petSprite)
+        val px = dpToPx(sizeDp)
+        sprite.layoutParams = sprite.layoutParams.apply { width = px; height = px }
+        // Pivot for the breathe loop depends on the view size; reset the
+        // animators so they re-derive it at the new size.
+        val wasBreathing = breatheEnabled
+        breatheX?.cancel(); breatheX = null
+        breatheY?.cancel(); breatheY = null
+        if (wasBreathing) startBreatheAnimation(sprite)
+        applyCosmeticView()
+        try { windowManager?.updateViewLayout(view, view.layoutParams as WindowManager.LayoutParams) } catch (_: Exception) { /* detached */ }
+    }
+
+    // Seats the cosmetic on the current theme's head: the cosmetic drawable
+    // is centered with its brim at the canvas middle, so shifting the
+    // overlay by (anchor - 0.5) of the pet size lands the brim on the head.
+    private fun applyCosmeticView() {
+        val view = overlayView ?: return
+        val hat = view.findViewById<ImageView>(R.id.petCosmetic)
+        val cosmetic = Cosmetics.byId(petCosmetic)
+        if (cosmetic.id == Cosmetics.NONE) {
+            hat.visibility = View.GONE
+            return
+        }
+        val anchor = PetThemes.hatAnchorFor(petTheme)
+        val sizePx = dpToPx(petSizeDp).toFloat()
+        hat.setImageResource(cosmetic.drawable)
+        hat.translationX = (anchor.x - 0.5f) * sizePx
+        hat.translationY = (anchor.y - 0.5f) * sizePx
+        hat.scaleX = anchor.scale
+        hat.scaleY = anchor.scale
+        hat.visibility = View.VISIBLE
+    }
+
+    private fun dpToPx(dp: Int): Int =
+        (dp * resources.displayMetrics.density).toInt()
 
     override fun onCreate() {
         super.onCreate()
@@ -149,8 +199,14 @@ class OverlayService : Service(), RelayListener {
     private fun addOverlayView() {
         val wm = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager = wm
-        petTheme = PrefsStore(this).petTheme
+        val prefs = PrefsStore(this)
+        petTheme = prefs.petTheme
+        petCosmetic = prefs.petCosmetic
+        petSizeDp = prefs.petSizeDp
         val view = LayoutInflater.from(this).inflate(R.layout.overlay_pet, null)
+        val sprite = view.findViewById<View>(R.id.petSprite)
+        val px = dpToPx(petSizeDp)
+        sprite.layoutParams = sprite.layoutParams.apply { width = px; height = px }
 
         val overlayType = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -174,12 +230,13 @@ class OverlayService : Service(), RelayListener {
         wm.addView(view, params)
         overlayView = view
         setPetArt(null)
+        applyCosmeticView()
     }
 
     // Gentle breathe loop for raster themes (clawd's AVDs animate
     // themselves) -- one pair of reusable animators on the ImageView, so no
     // per-frame decodes or allocations while idling on screen all day.
-    private fun startBreatheAnimation(body: ImageView) {
+    private fun startBreatheAnimation(body: View) {
         body.post {
             if (!breatheEnabled || breatheX != null) return@post
             body.pivotX = body.width / 2f
@@ -249,7 +306,7 @@ class OverlayService : Service(), RelayListener {
     }
 
     private fun onPetTapped(view: View) {
-        val body = view.findViewById<ImageView>(R.id.petBody)
+        val body = view.findViewById<View>(R.id.petSprite)
         val bounce = ObjectAnimator.ofFloat(body, "scaleX", 1f, 0.85f, 1.1f, 1f)
         val bounceY = ObjectAnimator.ofFloat(body, "scaleY", 1f, 0.85f, 1.1f, 1f)
         bounce.duration = 260
@@ -278,10 +335,10 @@ class OverlayService : Service(), RelayListener {
         val body = view.findViewById<ImageView>(R.id.petBody)
         body.setImageResource(res)
         (body.drawable as? android.graphics.drawable.Animatable)?.start()
-        setBreatheEnabled(body, !PetThemes.hasBuiltInAnimation(petTheme))
+        setBreatheEnabled(view.findViewById(R.id.petSprite), !PetThemes.hasBuiltInAnimation(petTheme))
     }
 
-    private fun setBreatheEnabled(body: ImageView, enabled: Boolean) {
+    private fun setBreatheEnabled(body: View, enabled: Boolean) {
         breatheEnabled = enabled
         if (enabled) {
             if (breatheX == null) startBreatheAnimation(body)

@@ -9,10 +9,14 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
+import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -35,6 +39,13 @@ class MainActivity : AppCompatActivity(), RelayListener {
     private lateinit var xpText: TextView
     private lateinit var streakText: TextView
     private lateinit var activityText: TextView
+    private lateinit var previewSprite: FrameLayout
+    private lateinit var previewBody: ImageView
+    private lateinit var previewCosmetic: ImageView
+    private lateinit var themeChips: LinearLayout
+    private lateinit var cosmeticChips: LinearLayout
+    private lateinit var sizeSlider: SeekBar
+    private lateinit var sizeValue: TextView
 
     private var boundService: OverlayService? = null
     private var isBound = false
@@ -73,7 +84,7 @@ class MainActivity : AppCompatActivity(), RelayListener {
         relayUrlInput.setText(prefs.relayUrl)
         syncCodeInput.setText(prefs.syncCode.uppercase())
 
-        setupThemePicker()
+        setupCustomizer()
         findViewById<Button>(R.id.savePairingButton).setOnClickListener { savePairing() }
         findViewById<Button>(R.id.grantPermissionButton).setOnClickListener { requestOverlayPermission() }
         toggleOverlayButton.setOnClickListener { toggleOverlay() }
@@ -128,27 +139,139 @@ class MainActivity : AppCompatActivity(), RelayListener {
         }
     }
 
-    private fun setupThemePicker() {
-        val group = findViewById<android.widget.RadioGroup>(R.id.themeGroup)
-        val preview = findViewById<android.widget.ImageView>(R.id.themePreview)
-        val idByTheme = mapOf(
-            PetThemes.CLAWD to R.id.themeClawd,
-            PetThemes.BOSS_CAT to R.id.themeBossCat,
-            PetThemes.CALICO to R.id.themeCalico,
-            PetThemes.CLOUDLING to R.id.themeCloudling
-        )
-        fun showPreview(theme: String) {
-            preview.setImageResource(PetThemes.drawableFor(theme, null))
-            (preview.drawable as? android.graphics.drawable.Animatable)?.start()
+    // ---------- dress-up stage: companion, accessory, size ----------
+
+    private fun setupCustomizer() {
+        previewSprite = findViewById(R.id.previewSprite)
+        previewBody = findViewById(R.id.previewBody)
+        previewCosmetic = findViewById(R.id.previewCosmetic)
+        themeChips = findViewById(R.id.themeChips)
+        cosmeticChips = findViewById(R.id.cosmeticChips)
+        sizeSlider = findViewById(R.id.sizeSlider)
+        sizeValue = findViewById(R.id.sizeValue)
+
+        for (theme in PetThemes.ALL) {
+            themeChips.addView(makeChip(
+                image = PetThemes.setFor(theme).idle,
+                label = getString(PetThemes.labelFor(theme)),
+                selected = theme == prefs.petTheme
+            ) {
+                prefs.petTheme = theme
+                selectChip(themeChips, it)
+                refreshPreview()
+                boundService?.applyTheme(theme)
+            })
         }
-        group.check(idByTheme[prefs.petTheme] ?: R.id.themeClawd)
-        showPreview(prefs.petTheme)
-        group.setOnCheckedChangeListener { _, checkedId ->
-            val theme = idByTheme.entries.firstOrNull { it.value == checkedId }?.key
-                ?: PetThemes.CLAWD
-            prefs.petTheme = theme
-            showPreview(theme)
-            boundService?.applyTheme(theme)
+
+        for (cosmetic in Cosmetics.ALL) {
+            cosmeticChips.addView(makeChip(
+                image = cosmetic.drawable,
+                label = getString(cosmetic.label),
+                selected = cosmetic.id == prefs.petCosmetic
+            ) {
+                prefs.petCosmetic = cosmetic.id
+                selectChip(cosmeticChips, it)
+                refreshPreview()
+                boundService?.applyCosmetic(cosmetic.id)
+            })
+        }
+
+        sizeSlider.progress = prefs.petSizeDp
+        sizeSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(bar: SeekBar?, value: Int, fromUser: Boolean) {
+                refreshPreview()
+                if (fromUser) boundService?.applySize(value)
+            }
+            override fun onStartTrackingTouch(bar: SeekBar?) {}
+            override fun onStopTrackingTouch(bar: SeekBar?) {
+                prefs.petSizeDp = sizeSlider.progress
+            }
+        })
+
+        refreshPreview()
+    }
+
+    /** Square chip with the art on top and its name underneath. */
+    private fun makeChip(image: Int, label: String, selected: Boolean, onClick: (View) -> Unit): View {
+        val density = resources.displayMetrics.density
+        fun dp(v: Int) = (v * density).toInt()
+
+        val chip = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = android.view.Gravity.CENTER_HORIZONTAL
+            setBackgroundResource(R.drawable.bg_chip)
+            setPadding(dp(10), dp(10), dp(10), dp(8))
+            isClickable = true
+            isFocusable = true
+            isSelected = selected
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { marginEnd = dp(8) }
+            minimumWidth = dp(72)
+        }
+        val art = ImageView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(dp(48), dp(48))
+            if (image != 0) {
+                setImageResource(image)
+                (drawable as? android.graphics.drawable.Animatable)?.start()
+            }
+        }
+        val name = TextView(this).apply {
+            text = label
+            textSize = 11f
+            setTextColor(ContextCompat.getColor(this@MainActivity, R.color.text_secondary))
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = dp(4) }
+        }
+        chip.addView(art)
+        chip.addView(name)
+        chip.contentDescription = label
+        chip.setOnClickListener { onClick(chip) }
+        return chip
+    }
+
+    private fun selectChip(row: LinearLayout, selected: View) {
+        for (i in 0 until row.childCount) {
+            row.getChildAt(i).isSelected = row.getChildAt(i) === selected
+        }
+    }
+
+    // What you see is your pet: the preview uses the exact size, art and
+    // cosmetic anchor the overlay will use.
+    private fun refreshPreview() {
+        val density = resources.displayMetrics.density
+        val sizeDp = sizeSlider.progress
+        val sizePx = (sizeDp * density).toInt()
+        previewSprite.layoutParams = previewSprite.layoutParams.apply {
+            width = sizePx; height = sizePx
+        }
+        sizeValue.text = getString(
+            when {
+                sizeDp < 64 -> R.string.size_small
+                sizeDp < 100 -> R.string.size_medium
+                sizeDp < 124 -> R.string.size_large
+                else -> R.string.size_huge
+            }
+        )
+
+        val theme = prefs.petTheme
+        previewBody.setImageResource(PetThemes.setFor(theme).idle)
+        (previewBody.drawable as? android.graphics.drawable.Animatable)?.start()
+
+        val cosmetic = Cosmetics.byId(prefs.petCosmetic)
+        if (cosmetic.id == Cosmetics.NONE) {
+            previewCosmetic.visibility = View.GONE
+        } else {
+            val anchor = PetThemes.hatAnchorFor(theme)
+            previewCosmetic.setImageResource(cosmetic.drawable)
+            previewCosmetic.translationX = (anchor.x - 0.5f) * sizePx
+            previewCosmetic.translationY = (anchor.y - 0.5f) * sizePx
+            previewCosmetic.scaleX = anchor.scale
+            previewCosmetic.scaleY = anchor.scale
+            previewCosmetic.visibility = View.VISIBLE
         }
     }
 
@@ -157,7 +280,16 @@ class MainActivity : AppCompatActivity(), RelayListener {
         val code = syncCodeInput.text.toString().trim().uppercase()
         prefs.relayUrl = url
         prefs.syncCode = code
-        Toast.makeText(this, "Saved. ${if (OverlayService.isRunning) "Restart the floating pet to apply." else ""}", Toast.LENGTH_SHORT).show()
+        Toast.makeText(
+            this,
+            getString(if (OverlayService.isRunning) R.string.pairing_saved_restart else R.string.pairing_saved),
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    private fun setStatus(textRes: Int, colorRes: Int) {
+        statusText.setText(textRes)
+        statusText.setTextColor(ContextCompat.getColor(this, colorRes))
     }
 
     private fun refreshPermissionCard() {
@@ -195,7 +327,7 @@ class MainActivity : AppCompatActivity(), RelayListener {
             return
         }
         if (!prefs.isConfigured()) {
-            Toast.makeText(this, "Save a relay URL and pairing code first.", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, R.string.pairing_missing, Toast.LENGTH_LONG).show()
             return
         }
         startOverlay()
@@ -213,7 +345,7 @@ class MainActivity : AppCompatActivity(), RelayListener {
         // refreshToggleButtonLabel() would still read "not running" here --
         // set the label for the state we just requested instead.
         toggleOverlayButton.text = getString(R.string.action_stop_overlay)
-        statusText.setText(R.string.status_connecting)
+        setStatus(R.string.status_connecting, R.color.text_secondary)
     }
 
     private fun stopOverlay() {
@@ -223,8 +355,10 @@ class MainActivity : AppCompatActivity(), RelayListener {
             isBound = false
         }
         stopService(Intent(this, OverlayService::class.java))
-        statusText.setText(R.string.status_disconnected)
-        refreshToggleButtonLabel()
+        setStatus(R.string.status_disconnected, R.color.text_secondary)
+        // Like startOverlay: isRunning flips asynchronously in the service's
+        // onDestroy, so set the label for the state we just requested.
+        toggleOverlayButton.text = getString(R.string.action_start_overlay)
     }
 
     private fun bindToService() {
@@ -247,13 +381,14 @@ class MainActivity : AppCompatActivity(), RelayListener {
 
     override fun onConnectionChanged(connected: Boolean) {
         runOnUiThread {
-            statusText.setText(if (connected) R.string.status_connected else R.string.status_connecting)
+            if (connected) setStatus(R.string.status_connected, R.color.status_connected)
+            else setStatus(R.string.status_connecting, R.color.text_secondary)
         }
     }
 
     override fun onPresence(info: PresenceInfo) {
         runOnUiThread {
-            if (!info.desktopOnline) statusText.setText(R.string.status_desktop_offline)
+            if (!info.desktopOnline) setStatus(R.string.status_desktop_offline, R.color.accent_dark)
         }
     }
 }

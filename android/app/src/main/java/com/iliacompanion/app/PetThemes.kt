@@ -15,8 +15,38 @@ object PetThemes {
     const val BOSS_CAT = "boss-cat"
     const val CALICO = "calico"
     const val CLOUDLING = "cloudling"
+    const val SPRIG = "sprig"
+    const val PIPPIN = "pippin"
 
-    val ALL = listOf(CLAWD, BOSS_CAT, CALICO, CLOUDLING)
+    val ALL = listOf(CLAWD, BOSS_CAT, CALICO, CLOUDLING, SPRIG, PIPPIN)
+
+    fun labelFor(theme: String): Int = when (theme) {
+        BOSS_CAT -> R.string.theme_boss_cat
+        CALICO -> R.string.theme_calico
+        CLOUDLING -> R.string.theme_cloudling
+        SPRIG -> R.string.theme_sprig
+        PIPPIN -> R.string.theme_pippin
+        else -> R.string.theme_clawd
+    }
+
+    /**
+     * Where a cosmetic sits on this theme's head: x = horizontal center as a
+     * fraction of the art canvas, y = fraction where the hat brim rests,
+     * scale = relative hat size. Cosmetic drawables are centered at (0.5,
+     * 0.5) with the brim at y=0.5, so the overlay view is translated by
+     * (x-0.5, y-0.5) of the pet size. Values were tuned visually against
+     * every theme's idle art (scratchpad pet-preview).
+     */
+    data class HatAnchor(val x: Float, val y: Float, val scale: Float)
+
+    fun hatAnchorFor(theme: String): HatAnchor = when (theme) {
+        BOSS_CAT -> HatAnchor(0.50f, 0.20f, 1.3f)
+        CALICO -> HatAnchor(0.42f, 0.35f, 1.0f)
+        CLOUDLING -> HatAnchor(0.50f, 0.27f, 1.1f)
+        SPRIG -> HatAnchor(0.539f, 0.492f, 1.0f)
+        PIPPIN -> HatAnchor(0.539f, 0.539f, 1.0f)
+        else -> HatAnchor(0.539f, 0.578f, 1.0f)
+    }
 
     fun drawableFor(theme: String, activity: String?): Int {
         val set = setFor(theme)
@@ -83,10 +113,30 @@ object PetThemes {
         gaming = R.drawable.pet_cloudling_gaming
     )
 
+    private val sprigSet = ArtSet(
+        idle = R.drawable.pet_sprig_idle,
+        typing = R.drawable.pet_sprig_typing,
+        music = R.drawable.pet_sprig_music,
+        video = R.drawable.pet_sprig_video,
+        meeting = R.drawable.pet_sprig_meeting,
+        gaming = R.drawable.pet_sprig_gaming
+    )
+
+    private val pippinSet = ArtSet(
+        idle = R.drawable.pet_pippin_idle,
+        typing = R.drawable.pet_pippin_typing,
+        music = R.drawable.pet_pippin_music,
+        video = R.drawable.pet_pippin_video,
+        meeting = R.drawable.pet_pippin_meeting,
+        gaming = R.drawable.pet_pippin_gaming
+    )
+
     fun setFor(theme: String): ArtSet = when (theme) {
         BOSS_CAT -> bossCatSet
         CALICO -> calicoSet
         CLOUDLING -> cloudlingSet
+        SPRIG -> sprigSet
+        PIPPIN -> pippinSet
         else -> clawdSet
     }
 }

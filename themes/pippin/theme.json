@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "name": "Pippin",
+  "author": "clawd-on-desk",
+  "version": "1.0.0",
+  "description": "A dapper pixel penguin — hatched on Android, now at home on desktop too",
+  "viewBox": {
+    "x": -15,
+    "y": -25,
+    "width": 45,
+    "height": 45
+  },
+  "layout": {
+    "contentBox": {
+      "x": -1,
+      "y": 3,
+      "width": 17,
+      "height": 13
+    },
+    "marginBox": {
+      "x": -5,
+      "y": -1,
+      "width": 25,
+      "height": 17
+    },
+    "centerX": 7.5,
+    "baselineY": 16,
+    "visibleHeightRatio": 0.58,
+    "baselineBottomRatio": 0.05
+  },
+  "eyeTracking": {
+    "enabled": true,
+    "states": [
+      "idle"
+    ],
+    "eyeRatioX": 0.5,
+    "eyeRatioY": 0.7244444444444444,
+    "maxOffset": 2.5,
+    "bodyScale": 0.33,
+    "shadowStretch": 0.15,
+    "shadowShift": 0.3,
+    "ids": {
+      "eyes": "eyes-js",
+      "body": "body-js",
+      "shadow": "shadow-js"
+    },
+    "shadowOrigin": "7.5px 15.5px"
+  },
+  "states": {
+    "idle": [
+      "idle.svg"
+    ],
+    "thinking": [
+      "thinking.svg"
+    ],
+    "working": [
+      "working.svg"
+    ],
+    "juggling": [
+      "juggling.svg",
+      "music.svg",
+      "video.svg"
+    ],
+    "error": {
+      "fallbackTo": "attention"
+    },
+    "attention": [
+      "attention.svg"
+    ],
+    "notification": [
+      "notification.svg"
+    ],
+    "sleeping": [
+      "sleeping.svg"
+    ],
+    "waking": [
+      "waking.svg"
+    ]
+  },
+  "sleepSequence": {
+    "mode": "direct"
+  },
+  "displayHintMap": {
+    "gaming": "juggling.svg",
+    "music": "music.svg",
+    "video": "video.svg",
+    "meeting": "thinking.svg",
+    "typing": "working.svg"
+  },
+  "hitBoxes": {
+    "default": {
+      "x": -1,
+      "y": 3,
+      "w": 17,
+      "h": 13
+    },
+    "sleeping": {
+      "x": -1,
+      "y": 5,
+      "w": 17,
+      "h": 11
+    }
+  },
+  "sleepingHitboxFiles": [
+    "sleeping.svg"
+  ],
+  "objectScale": {
+    "widthRatio": 1.9,
+    "heightRatio": 1.3,
+    "offsetX": -0.45,
+    "offsetY": -0.25
+  }
+}

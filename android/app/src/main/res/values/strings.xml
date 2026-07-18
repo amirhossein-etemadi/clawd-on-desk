@@ -2,19 +2,25 @@
 <resources>
     <string name="app_name">Ilia Companion</string>
 
+    <string name="tagline">Your desktop coding pet, in your pocket</string>
+
     <string name="label_relay_url">Relay URL</string>
     <string name="hint_relay_url">https://ilia-companion-sync.your-subdomain.workers.dev</string>
     <string name="label_sync_code">Pairing code</string>
-    <string name="hint_sync_code">Enter the code from Settings &gt; Companion &gt; Phone Sync</string>
-    <string name="action_save_pairing">Save</string>
-    <string name="action_start_overlay">Start Floating Pet</string>
-    <string name="action_stop_overlay">Stop Floating Pet</string>
-    <string name="overlay_permission_needed">Ilia Companion needs permission to draw over other apps for the floating pet. Tap to grant it.</string>
-    <string name="overlay_permission_button">Grant Overlay Permission</string>
+    <string name="hint_sync_code">6-letter code</string>
+    <string name="pairing_help">On your computer, open Settings → Companion → Phone Sync and copy the relay URL and pairing code here.</string>
+    <string name="action_save_pairing">Save pairing</string>
+    <string name="pairing_saved">Pairing saved.</string>
+    <string name="pairing_saved_restart">Pairing saved. Restart the floating pet to apply.</string>
+    <string name="pairing_missing">Enter a relay URL and pairing code first.</string>
+    <string name="action_start_overlay">Start floating pet</string>
+    <string name="action_stop_overlay">Stop floating pet</string>
+    <string name="overlay_permission_needed">To float over other apps, the pet needs the “display over other apps” permission.</string>
+    <string name="overlay_permission_button">Allow floating pet</string>
     <string name="status_disconnected">Not connected</string>
     <string name="status_connecting">Connecting…</string>
     <string name="status_connected">Live — mirroring your desktop</string>
-    <string name="status_desktop_offline">Connected to relay, desktop offline</string>
+    <string name="status_desktop_offline">Relay OK, desktop offline</string>
     <string name="label_level">Level</string>
     <string name="label_streak">Streak</string>
     <string name="label_activity">Current activity</string>
@@ -23,11 +29,32 @@
     <string name="placeholder_streak">Streak: —</string>
     <string name="placeholder_activity">Current activity: —</string>
 
+    <string name="section_companion">Companion</string>
+    <string name="section_accessory">Accessory</string>
+    <string name="section_size">Pet size</string>
+    <string name="size_small">Small</string>
+    <string name="size_medium">Cozy</string>
+    <string name="size_large">Large</string>
+    <string name="size_huge">Huge</string>
+    <string name="section_setup">Step 1 · Pair with your desktop</string>
+    <string name="section_permission">Step 2 · Allow the floating pet</string>
+    <string name="section_stats">Live stats</string>
+    <string name="preview_description">Preview of your companion</string>
+
     <string name="label_pet_theme">Pet theme</string>
     <string name="theme_clawd">Clawd</string>
     <string name="theme_boss_cat">Cozy Cat</string>
     <string name="theme_calico">Calico</string>
     <string name="theme_cloudling">Cloudling</string>
+    <string name="theme_sprig">Sprig</string>
+    <string name="theme_pippin">Pippin</string>
+
+    <string name="cosmetic_none">None</string>
+    <string name="cosmetic_party">Party hat</string>
+    <string name="cosmetic_crown">Crown</string>
+    <string name="cosmetic_beanie">Beanie</string>
+    <string name="cosmetic_bow">Bow</string>
+    <string name="cosmetic_sprout">Sprout</string>
 
     <string name="notif_channel_name">Companion overlay</string>
     <string name="notif_alerts_channel_name">Companion alerts</string>

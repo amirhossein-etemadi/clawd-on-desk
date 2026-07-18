@@ -6,11 +6,14 @@ use) that shows your pet's current activity, reacts to taps, and a stats
 screen with your level/XP/streak. Talks to your own Cloudflare relay (see
 `../cloud/README.md`) over WebSocket.
 
-**Scope of this first version** — worth knowing up front:
-- The floating pet uses a simplified, generic look (a round cat + a small
-  activity badge icon) rather than pixel-perfect art for whichever desktop
-  theme you're using. Porting each theme's actual art to Android is a
-  reasonable future improvement, not attempted here.
+**Scope** — worth knowing up front:
+- The floating pet has native art for six companions: the four desktop
+  themes (Clawd, Cozy Cat, Calico, Cloudling) plus two Android-first ones
+  (Sprig the frog and Pippin the penguin, `pet_sprig_*`/`pet_pippin_*`
+  drawables), each with per-activity states matching the desktop's
+  displayHintMap. Companions can wear accessories (`cosmetic_*` drawables,
+  anchored per theme via `PetThemes.hatAnchorFor`), and the floating pet's
+  size is adjustable from the main screen (48–144dp slider).
 - iOS is not supported and can't be, by design: iOS has no API for a
   persistent overlay over other apps. Android allows it via the same
   "draw over other apps" permission Messenger uses.
